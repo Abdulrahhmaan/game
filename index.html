@@ -786,7 +786,7 @@
 
   <div class="level-results" id="level-results"></div>
   <div class="result-actions">
-    <button class="action-btn btn-save" onclick="saveResult()">💾 حفظ النتيجة</button>
+    <button class="action-btn btn-save" onclick="sendToGoogleForm()">📋 إرسال النتيجة للمعلم</button>
     <button class="action-btn btn-print" onclick="printResult()">🖨️ طباعة النتيجة</button>
     <button class="action-btn btn-play-again" onclick="restartGame()">🔄 العب مجدداً</button>
     <button class="action-btn btn-home" onclick="goHome()">🏠 الصفحة الرئيسية</button>
@@ -1900,6 +1900,25 @@ function autoSaveResult(score) {
 function saveResult() {
   if (!currentUser) return;
   showToast('✅ تم حفظ النتيجة!', true);
+}
+
+function sendToGoogleForm() {
+  if (!currentUser) return;
+  const playerName = currentUser.playerName || currentUser.username;
+  const score = state.score;
+  const pct = Math.round((score / MAX_SCORE) * 100);
+  const ratingInfo = calculateRating(score);
+  
+  const baseUrl = "https://docs.google.com/forms/d/e/1FAIpQLSdDs1648CAabE_YMCEhvz9QMiLSjlXjuyy9WDpugxmIJZr2-A/viewform";
+  const params = new URLSearchParams({
+    'entry.1947823773': playerName,
+    'entry.990636809': score + ' / ' + MAX_SCORE,
+    'entry.2095291912': pct + '%',
+    'entry.1541836002': ratingInfo.rating
+  });
+  
+  window.open(baseUrl + '?' + params.toString(), '_blank');
+  showToast('✅ تم فتح نموذج الإرسال!', true);
 }
 
 function printResult() {
