@@ -1,0 +1,2140 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مستكشف العالم الرقمي - النسخة المتقدمة</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+  :root {
+    --bg: #050d1a;
+    --panel: #0a1628;
+    --panel2: #0e1e38;
+    --accent: #00d4ff;
+    --accent2: #7b2fff;
+    --accent3: #ff6b35;
+    --green: #00ff88;
+    --red: #ff3d6b;
+    --gold: #ffd700;
+    --text: #e8f4ff;
+    --muted: #6a8aaa;
+    --glow: 0 0 20px rgba(0,212,255,0.4);
+    --glow2: 0 0 20px rgba(123,47,255,0.4);
+    --glow-gold: 0 0 20px rgba(255,215,0,0.4);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background: radial-gradient(ellipse at 20% 50%, rgba(0,212,255,0.05) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(123,47,255,0.08) 0%, transparent 50%);
+    pointer-events: none; z-index: 0;
+  }
+  .stars { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+  .star { position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%; animation: twinkle var(--d, 3s) infinite alternate ease-in-out; opacity: 0.4; }
+  @keyframes twinkle { to { opacity: 0.9; transform: scale(1.5); } }
+
+  .screen { display: none !important; position: relative; z-index: 1; }
+  .screen.active { display: block !important; }
+  #login-screen.active { display: flex !important; }
+  #player-name-screen.active { display: flex !important; }
+  #intro-screen.active { display: flex !important; }
+
+  /* ========== LOGIN SCREEN ========== */
+  #login-screen {
+    min-height: 100vh; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .login-box {
+    background: var(--panel); border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 24px; padding: 40px; max-width: 440px; width: 100%;
+    box-shadow: 0 0 60px rgba(0,212,255,0.1);
+  }
+  .login-logo { text-align: center; margin-bottom: 32px; }
+  .login-logo .logo-text {
+    font-family: 'Orbitron', sans-serif; font-size: 22px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .login-logo .logo-sub { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .form-group { margin-bottom: 18px; }
+  .form-group label { display: block; font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 8px; }
+  .form-input {
+    width: 100%; background: var(--panel2); border: 2px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 12px 16px; color: var(--text);
+    font-family: 'Cairo', sans-serif; font-size: 15px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .login-hint {
+    background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.15);
+    border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; font-size: 13px;
+  }
+  .hint-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .hint-row:last-child { margin-bottom: 0; }
+  .hint-label { color: var(--muted); }
+  .hint-val { color: var(--accent); font-weight: 700; font-family: monospace; font-size: 14px; }
+  .login-btn {
+    width: 100%; background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; color: white; font-family: 'Cairo', sans-serif;
+    font-size: 17px; font-weight: 700; padding: 14px; border-radius: 50px;
+    cursor: pointer; transition: all 0.3s; box-shadow: 0 0 30px rgba(0,212,255,0.3);
+  }
+  .login-btn:hover { transform: scale(1.02); box-shadow: 0 0 50px rgba(0,212,255,0.5); }
+  .login-error { color: var(--red); text-align: center; font-size: 14px; margin-top: 12px; display: none; }
+
+  /* ========== INTRO SCREEN ========== */
+  #intro-screen {
+    min-height: 100vh; flex-direction: column;
+    align-items: center; justify-content: center; padding: 40px 20px; text-align: center;
+  }
+  .welcome-user {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 50px; padding: 8px 20px; margin-bottom: 20px; font-size: 14px;
+  }
+  .user-avatar { font-size: 20px; }
+  .game-logo {
+    font-family: 'Orbitron', sans-serif; font-size: clamp(24px,5vw,50px);
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    filter: drop-shadow(0 0 20px rgba(0,212,255,0.5)); margin-bottom: 8px;
+  }
+  .game-subtitle { font-size: 16px; color: var(--muted); margin-bottom: 12px; }
+  .total-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,215,0,0.05));
+    border: 1px solid rgba(255,215,0,0.3); border-radius: 50px; padding: 8px 22px;
+    font-size: 14px; font-weight: 700; color: var(--gold); margin-bottom: 30px;
+    box-shadow: var(--glow-gold);
+  }
+
+  /* Previous scores on intro */
+  .my-scores-box {
+    background: var(--panel); border: 1px solid rgba(0,212,255,0.15);
+    border-radius: 16px; padding: 20px 24px; max-width: 500px; width: 100%;
+    margin-bottom: 24px; text-align: right;
+  }
+  .my-scores-title { font-size: 14px; font-weight: 700; color: var(--accent); margin-bottom: 12px; }
+  .score-entry {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px;
+  }
+  .score-entry:last-child { border-bottom: none; }
+  .score-entry-val { color: var(--gold); font-weight: 700; }
+  .no-scores { font-size: 13px; color: var(--muted); }
+
+  .levels-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px; max-width: 820px; width: 100%; margin-bottom: 30px;
+  }
+  .level-card {
+    background: var(--panel); border: 1px solid rgba(0,212,255,0.15);
+    border-radius: 14px; padding: 16px 12px; transition: all 0.3s;
+  }
+  .level-card:hover { border-color: rgba(0,212,255,0.4); transform: translateY(-3px); box-shadow: var(--glow); }
+  .level-card.new-level { border-color: rgba(255,215,0,0.2); }
+  .level-card.new-level:hover { border-color: rgba(255,215,0,0.5); box-shadow: var(--glow-gold); }
+  .level-icon { font-size: 28px; margin-bottom: 6px; }
+  .level-name { font-size: 11px; color: var(--accent); font-weight: 700; margin-bottom: 3px; }
+  .level-title-sm { font-size: 12px; font-weight: 700; margin-bottom: 3px; }
+  .level-desc { font-size: 10px; color: var(--muted); }
+  .new-tag {
+    display: inline-block; background: linear-gradient(135deg, var(--gold), #ff9500);
+    color: #000; font-size: 9px; font-weight: 900; padding: 2px 8px;
+    border-radius: 20px; margin-bottom: 4px;
+  }
+
+  .start-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; color: white; font-family: 'Cairo', sans-serif;
+    font-size: 18px; font-weight: 700; padding: 16px 50px;
+    border-radius: 50px; cursor: pointer;
+    box-shadow: 0 0 30px rgba(0,212,255,0.4), 0 0 60px rgba(123,47,255,0.2);
+    transition: all 0.3s; margin-left: 12px;
+  }
+  .start-btn:hover { transform: scale(1.05); }
+  .admin-btn {
+    background: linear-gradient(135deg, var(--gold), #ff9500);
+    border: none; color: #000; font-family: 'Cairo', sans-serif;
+    font-size: 16px; font-weight: 700; padding: 16px 32px;
+    border-radius: 50px; cursor: pointer; transition: all 0.3s;
+  }
+  .admin-btn:hover { transform: scale(1.05); }
+  .logout-btn {
+    background: rgba(255,61,107,0.1); border: 1px solid rgba(255,61,107,0.3);
+    color: var(--red); font-family: 'Cairo', sans-serif;
+    font-size: 14px; font-weight: 700; padding: 10px 24px;
+    border-radius: 50px; cursor: pointer; transition: all 0.3s; margin-top: 16px;
+  }
+
+  /* ========== GAME SCREEN ========== */
+  #game-screen { padding: 0; }
+  .game-header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(5,13,26,0.95); backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0,212,255,0.15);
+    padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .header-title { font-family: 'Orbitron', sans-serif; font-size: 12px; color: var(--accent); letter-spacing: 2px; }
+  .player-name-badge {
+    background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 700;
+  }
+  .score-display {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 20px; padding: 5px 14px; font-size: 13px; font-weight: 700;
+  }
+  .score-number { color: var(--accent); font-size: 16px; }
+  .progress-container { flex: 1; max-width: 200px; }
+  .progress-label { font-size: 10px; color: var(--muted); margin-bottom: 3px; }
+  .progress-bar-wrap { height: 5px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 10px; transition: width 0.5s ease; }
+
+  /* Timer */
+  .timer-container {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.3);
+    border-radius: 20px; padding: 5px 16px; font-size: 13px; font-weight: 700;
+  }
+  .timer-count { font-size: 18px; font-weight: 900; color: var(--accent3); min-width: 28px; text-align: center; transition: color 0.3s; }
+  .timer-count.urgent { color: var(--red); animation: blink 0.5s infinite; }
+  @keyframes blink { 50% { opacity: 0.4; } }
+
+  /* Timer above question */
+  .question-timer {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px; padding: 10px 16px;
+    background: rgba(255,107,53,0.06); border: 1px solid rgba(255,107,53,0.2);
+    border-radius: 12px;
+  }
+  .qt-label { font-size: 12px; color: var(--muted); }
+  .qt-bar-wrap { flex: 1; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin: 0 12px; }
+  .qt-bar { height: 100%; background: linear-gradient(90deg, var(--green), var(--accent3)); border-radius: 10px; transition: width 1s linear; }
+  .qt-bar.danger { background: linear-gradient(90deg, var(--accent3), var(--red)); }
+  .qt-num { font-size: 14px; font-weight: 900; color: var(--accent3); min-width: 24px; }
+  .qt-num.urgent { color: var(--red); }
+
+  .level-stage { padding: 30px 20px; max-width: 700px; margin: 0 auto; animation: fadeIn 0.5s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  .level-header { text-align: center; margin-bottom: 30px; }
+  .level-badge {
+    display: inline-block; background: linear-gradient(135deg, var(--accent2), var(--accent));
+    border-radius: 20px; padding: 5px 18px; font-size: 12px; font-weight: 700; margin-bottom: 12px;
+  }
+  .level-badge.manhaj-badge { background: linear-gradient(135deg, #ff9500, var(--gold)); color: #000; }
+  .level-title { font-size: clamp(20px, 4vw, 28px); font-weight: 900; margin-bottom: 8px; }
+  .level-scenario {
+    background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.15);
+    border-radius: 12px; padding: 14px 18px; font-size: 13px; color: var(--muted); line-height: 1.8;
+  }
+  .level-scenario.manhaj-scenario { background: rgba(255,215,0,0.04); border-color: rgba(255,215,0,0.15); }
+  .level-scenario strong { color: var(--accent); }
+  .level-scenario.manhaj-scenario strong { color: var(--gold); }
+
+  .question-block {
+    background: var(--panel); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 20px; padding: 24px; margin-bottom: 20px;
+  }
+  .q-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .q-number { font-size: 11px; color: var(--muted); font-weight: 700; letter-spacing: 2px; }
+  .q-skipped-badge {
+    font-size: 10px; color: var(--accent3); background: rgba(255,107,53,0.1);
+    border: 1px solid rgba(255,107,53,0.3); border-radius: 20px; padding: 2px 10px;
+  }
+  .q-text { font-size: 16px; font-weight: 700; line-height: 1.7; margin-bottom: 20px; color: var(--text); }
+  .options-list { display: flex; flex-direction: column; gap: 10px; }
+  .option-btn {
+    background: var(--panel2); border: 2px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 12px 16px; color: var(--text); font-family: 'Cairo', sans-serif;
+    font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.25s;
+    text-align: right; width: 100%; display: flex; align-items: center; gap: 10px;
+  }
+  .option-btn .opt-icon {
+    width: 30px; height: 30px; border-radius: 8px; background: rgba(255,255,255,0.07);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: var(--muted); flex-shrink: 0;
+  }
+  .option-btn:hover:not(:disabled) { border-color: var(--accent); background: rgba(0,212,255,0.07); transform: translateX(-3px); }
+  .option-btn:hover:not(:disabled) .opt-icon { background: rgba(0,212,255,0.2); color: var(--accent); }
+  .option-btn.correct { border-color: var(--green); background: rgba(0,255,136,0.08); }
+  .option-btn.correct .opt-icon { background: rgba(0,255,136,0.2); color: var(--green); }
+  .option-btn.wrong { border-color: var(--red); background: rgba(255,61,107,0.08); animation: shake 0.4s ease; }
+  .option-btn.wrong .opt-icon { background: rgba(255,61,107,0.2); color: var(--red); }
+  .option-btn:disabled { cursor: not-allowed; }
+  @keyframes shake { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-6px); } 75% { transform:translateX(6px); } }
+
+  .feedback-box {
+    border-radius: 12px; padding: 12px 16px; font-size: 13px; font-weight: 600; line-height: 1.7;
+    margin-top: 14px; display: none;
+  }
+  .feedback-box.show { display: block; animation: fadeIn 0.3s ease; }
+  .feedback-box.correct-fb { background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.3); color: var(--green); }
+  .feedback-box.wrong-fb { background: rgba(255,61,107,0.08); border: 1px solid rgba(255,61,107,0.3); color: #ff8fa8; }
+  .feedback-box.timeout-fb { background: rgba(255,107,53,0.08); border: 1px solid rgba(255,107,53,0.3); color: var(--accent3); }
+
+  /* Nav + Skip */
+  .nav-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 24px; padding-bottom: 40px; flex-wrap: wrap; }
+  .nav-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; color: white; font-family: 'Cairo', sans-serif;
+    font-size: 15px; font-weight: 700; padding: 12px 36px;
+    border-radius: 50px; cursor: pointer; transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(0,212,255,0.3); opacity: 0.4; pointer-events: none;
+  }
+  .nav-btn.enabled { opacity: 1; pointer-events: all; }
+  .nav-btn.enabled:hover { transform: scale(1.04); }
+  .skip-btn {
+    background: rgba(255,107,53,0.1); border: 2px solid rgba(255,107,53,0.4);
+    color: var(--accent3); font-family: 'Cairo', sans-serif;
+    font-size: 14px; font-weight: 700; padding: 12px 28px;
+    border-radius: 50px; cursor: pointer; transition: all 0.3s;
+  }
+  .skip-btn:hover { background: rgba(255,107,53,0.2); border-color: var(--accent3); }
+  .skip-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Drag & Drop */
+  .drag-area {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;
+    padding: 10px; border-radius: 12px; background: rgba(255,255,255,0.03);
+    border: 1px dashed rgba(255,255,255,0.1); min-height: 50px;
+  }
+  .drag-item {
+    background: var(--panel2); border: 2px solid rgba(0,212,255,0.2);
+    border-radius: 10px; padding: 8px 14px; cursor: grab;
+    font-size: 13px; font-weight: 700; color: var(--accent); user-select: none; transition: all 0.2s;
+  }
+  .drag-item:hover { border-color: var(--accent); transform: scale(1.05); }
+  .drag-item.dragging { opacity: 0.5; cursor: grabbing; }
+  .drop-zones { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .drop-zone-row { display: flex; align-items: center; gap: 10px; }
+  .drop-zone-label { font-size: 12px; color: var(--muted); min-width: 170px; }
+  .drop-zone {
+    flex: 1; min-height: 44px; border: 2px dashed rgba(0,212,255,0.25);
+    border-radius: 10px; padding: 6px 12px; display: flex; align-items: center;
+    font-size: 12px; color: var(--muted); transition: all 0.2s; background: rgba(0,212,255,0.03);
+  }
+  .drop-zone.over { border-color: var(--accent); background: rgba(0,212,255,0.08); }
+
+  /* Sequence */
+  .seq-items { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
+  .seq-item {
+    background: var(--panel2); border: 2px solid rgba(255,255,255,0.07);
+    border-radius: 12px; padding: 10px 16px; cursor: grab; font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; gap: 10px; transition: all 0.2s; user-select: none;
+  }
+  .seq-item:hover { border-color: var(--accent2); }
+  .seq-item .seq-num {
+    width: 26px; height: 26px; border-radius: 50%; background: rgba(123,47,255,0.2);
+    border: 1px solid var(--accent2); display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: var(--accent2); flex-shrink: 0;
+  }
+  .seq-item.dragging { opacity: 0.4; }
+  .seq-item.drag-over { border-color: var(--green); }
+
+  /* Toast */
+  .points-toast {
+    position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+    background: var(--green); color: #000; font-weight: 900; font-size: 16px;
+    padding: 8px 24px; border-radius: 50px; z-index: 999;
+    animation: toastAnim 1.5s ease forwards; pointer-events: none;
+  }
+  @keyframes toastAnim {
+    0% { opacity:0; transform:translateX(-50%) translateY(-20px); }
+    20% { opacity:1; transform:translateX(-50%) translateY(0); }
+    70% { opacity:1; }
+    100% { opacity:0; transform:translateX(-50%) translateY(-10px); }
+  }
+
+  /* ========== RESULT SCREEN ========== */
+  #result-screen {
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 40px 20px; text-align: center;
+  }
+  .result-emoji { font-size: 70px; margin-bottom: 16px; animation: bounce 1s ease infinite alternate; }
+  @keyframes bounce { to { transform: translateY(-10px); } }
+  .result-title { font-size: clamp(24px,5vw,42px); font-weight: 900; margin-bottom: 8px; background: linear-gradient(135deg, var(--green), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .result-player-name { font-size: 16px; color: var(--muted); margin-bottom: 6px; }
+  .result-score { font-size: 56px; font-weight: 900; color: var(--accent); text-shadow: var(--glow); margin: 16px 0; font-family: 'Orbitron', sans-serif; }
+  .result-max { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+  .level-results { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 800px; width: 100%; margin-bottom: 32px; }
+  .lr-card { background: var(--panel); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 14px; }
+  .lr-card.manhaj-card { border-color: rgba(255,215,0,0.15); }
+  .lr-icon { font-size: 24px; margin-bottom: 5px; }
+  .lr-name { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .lr-bar-wrap { height: 5px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
+  .lr-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--green)); border-radius: 10px; }
+  .lr-bar.manhaj-bar { background: linear-gradient(90deg, #ff9500, var(--gold)); }
+  .lr-pts { font-size: 13px; font-weight: 700; margin-top: 5px; color: var(--green); }
+
+  .result-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; }
+  .action-btn {
+    border: none; font-family: 'Cairo', sans-serif;
+    font-size: 14px; font-weight: 700; padding: 12px 24px;
+    border-radius: 50px; cursor: pointer; transition: all 0.3s;
+  }
+  .btn-play-again { background: linear-gradient(135deg, var(--accent2), var(--accent)); color: white; box-shadow: var(--glow2); }
+  .btn-save { background: linear-gradient(135deg, var(--green), #00aa55); color: #000; }
+  .btn-print { background: linear-gradient(135deg, var(--gold), #ff9500); color: #000; }
+  .btn-home { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: var(--text); }
+  .action-btn:hover { transform: scale(1.05); }
+
+  /* ========== ADMIN SCREEN ========== */
+  #admin-screen { min-height: 100vh; padding: 0; }
+  .admin-header {
+    background: rgba(5,13,26,0.95); backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,215,0,0.2); padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .admin-title { font-family: 'Orbitron', sans-serif; font-size: 16px; color: var(--gold); }
+  .admin-content { padding: 30px 24px; max-width: 900px; margin: 0 auto; }
+  .admin-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px;
+  }
+  .stat-card {
+    background: var(--panel); border: 1px solid rgba(255,215,0,0.15);
+    border-radius: 16px; padding: 20px; text-align: center;
+  }
+  .stat-num { font-size: 36px; font-weight: 900; color: var(--gold); font-family: 'Orbitron', sans-serif; }
+  .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .results-table-wrap { background: var(--panel); border: 1px solid rgba(255,215,0,0.15); border-radius: 16px; overflow: hidden; margin-bottom: 24px; }
+  .results-table-title { padding: 16px 20px; font-size: 14px; font-weight: 700; color: var(--gold); border-bottom: 1px solid rgba(255,215,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+  .results-table { width: 100%; border-collapse: collapse; }
+  .results-table th { background: rgba(255,215,0,0.05); padding: 12px 16px; font-size: 12px; font-weight: 700; color: var(--gold); text-align: right; border-bottom: 1px solid rgba(255,215,0,0.1); }
+  .results-table td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .results-table tr:last-child td { border-bottom: none; }
+  .results-table tr:hover td { background: rgba(255,215,0,0.03); }
+  .score-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.2); border-radius: 20px; padding: 3px 10px; font-weight: 700; color: var(--accent); }
+  .rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-weight: 900; font-size: 13px; }
+  .rank-1 { background: var(--gold); color: #000; }
+  .rank-2 { background: #c0c0c0; color: #000; }
+  .rank-3 { background: #cd7f32; color: #fff; }
+  .rank-other { background: rgba(255,255,255,0.1); color: var(--muted); }
+  
+  /* Rating Badge Styles */
+  .rating-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;
+    min-width: 80px; text-align: center;
+  }
+  .rating-excellent {
+    background: linear-gradient(135deg, #ffd700, #ff9500);
+    color: #000; box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+  }
+  .rating-very-good {
+    background: linear-gradient(135deg, var(--accent), #0099cc);
+    color: #fff; box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+  }
+  .rating-good {
+    background: linear-gradient(135deg, var(--green), #00aa55);
+    color: #000; box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+  }
+  .rating-acceptable {
+    background: linear-gradient(135deg, #6a9f5a, #4a7f3a);
+    color: #fff; box-shadow: 0 0 10px rgba(106, 159, 90, 0.3);
+  }
+  .rating-weak {
+    background: linear-gradient(135deg, #ff6b35, #ff8c42);
+    color: #fff; box-shadow: 0 0 10px rgba(255, 107, 53, 0.3);
+  }
+  .rating-fail {
+    background: linear-gradient(135deg, var(--red), #cc2244);
+    color: #fff; box-shadow: 0 0 10px rgba(255, 61, 107, 0.3);
+  }
+
+  .admin-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn-clear { background: rgba(255,61,107,0.1); border: 2px solid rgba(255,61,107,0.3); color: var(--red); font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700; padding: 12px 24px; border-radius: 50px; cursor: pointer; transition: all 0.3s; }
+  .btn-clear:hover { background: rgba(255,61,107,0.2); }
+  .btn-print-admin { background: linear-gradient(135deg, var(--gold), #ff9500); border: none; color: #000; font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700; padding: 12px 24px; border-radius: 50px; cursor: pointer; transition: all 0.3s; }
+  .btn-back { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); color: var(--text); font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700; padding: 12px 24px; border-radius: 50px; cursor: pointer; transition: all 0.3s; }
+  .empty-results { text-align: center; padding: 32px; color: var(--muted); font-size: 14px; }
+
+  /* Print Styles */
+  @media print {
+    body { background: white; color: black; }
+    .stars, .game-header, .nav-buttons, .result-actions, .admin-header, .admin-actions { display: none !important; }
+    .screen { display: block !important; }
+    #login-screen, #intro-screen, #game-screen, #admin-screen { display: none !important; }
+    #result-screen, #print-screen { display: block !important; }
+    .print-area { color: black; background: white; padding: 20px; }
+    .result-score { color: #0066cc; }
+  }
+
+  /* ========== FOOTER ========== */
+  .site-footer {
+    width: 100%; text-align: center; padding: 28px 20px 20px;
+    margin-top: 36px; border-top: 1px solid rgba(0,212,255,0.12);
+  }
+  .footer-designer {
+    font-size: 14px; font-weight: 700; margin-bottom: 6px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .footer-dua {
+    font-size: 13px; color: var(--gold); margin-bottom: 6px; font-weight: 600;
+  }
+  .footer-contact {
+    font-size: 12px; color: var(--muted); margin-bottom: 14px;
+  }
+  .footer-links {
+    display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+  }
+  .footer-btn-yt {
+    display: inline-block; padding: 8px 20px;
+    background: linear-gradient(135deg, #d4a017, #b8860b);
+    color: #0d1117; font-family: 'Cairo', sans-serif;
+    font-weight: 700; font-size: 13px; border-radius: 20px;
+    text-decoration: none; transition: transform 0.2s;
+    box-shadow: 0 4px 14px rgba(212,160,23,0.3);
+  }
+  .footer-btn-yt:hover { transform: scale(1.05); }
+  .footer-btn-fb {
+    display: inline-flex; align-items: center; gap: 7px; padding: 8px 20px;
+    background: linear-gradient(135deg, #1877f2, #0d5fc2);
+    color: #fff; font-family: 'Cairo', sans-serif;
+    font-weight: 700; font-size: 13px; border-radius: 20px;
+    text-decoration: none; transition: transform 0.2s;
+    box-shadow: 0 4px 14px rgba(24,119,242,0.35);
+  }
+  .footer-btn-fb:hover { transform: scale(1.05); }
+
+  /* Lifeline Button */
+  .lifeline-btn {
+    display: flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,107,53,0.1));
+    border: 2px solid rgba(255,215,0,0.4); color: var(--gold);
+    font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 700;
+    padding: 8px 18px; border-radius: 50px; cursor: pointer; transition: all 0.3s;
+    box-shadow: 0 0 14px rgba(255,215,0,0.2);
+  }
+  .lifeline-btn:hover:not(:disabled) { background: linear-gradient(135deg, rgba(255,215,0,0.25), rgba(255,107,53,0.2)); box-shadow: 0 0 24px rgba(255,215,0,0.4); transform: scale(1.04); }
+  .lifeline-btn:disabled { opacity: 0.35; cursor: not-allowed; filter: grayscale(0.5); }
+  .lifeline-count { background: rgba(255,215,0,0.2); border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; }
+
+  /* Lifeline + Withdraw bar above question */
+  .lifeline-withdraw-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    max-width: 700px; margin: 0 auto 14px; padding: 10px 16px;
+    background: rgba(10,22,40,0.7); border: 1px solid rgba(255,215,0,0.15);
+    border-radius: 14px; gap: 10px; flex-wrap: wrap;
+  }
+
+  /* Withdraw button */
+  .withdraw-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(255,61,107,0.08); border: 2px solid rgba(255,61,107,0.35);
+    color: var(--red); font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 700;
+    padding: 8px 18px; border-radius: 50px; cursor: pointer; transition: all 0.3s;
+  }
+  .withdraw-btn:hover { background: rgba(255,61,107,0.18); border-color: var(--red); transform: scale(1.04); }
+
+  /* Global countdown timer */
+  .global-timer {
+    display: flex; align-items: center; gap: 7px;
+    background: rgba(255,61,107,0.08); border: 1px solid rgba(255,61,107,0.3);
+    border-radius: 20px; padding: 5px 14px; font-size: 13px; font-weight: 700;
+  }
+  .global-timer-num { font-size: 16px; font-weight: 900; color: var(--accent3); min-width: 50px; text-align: center; font-family: 'Orbitron', sans-serif; }
+  .global-timer-num.urgent { color: var(--red); animation: blink 0.5s infinite; }
+
+  @media (max-width: 600px) {
+    .levels-grid { grid-template-columns: repeat(2, 1fr); }
+    .level-results { grid-template-columns: repeat(2, 1fr); }
+    .admin-stats { grid-template-columns: 1fr; }
+    .game-header { flex-wrap: wrap; }
+    .drop-zone-row { flex-direction: column; align-items: flex-start; }
+  }
+  @media (max-width: 400px) {
+    .levels-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<!-- ========== LOGIN SCREEN ========== -->
+<div id="login-screen" class="screen active">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="logo-text">🌐 Digital Explorer</div>
+      <div class="logo-sub">مستكشف العالم الرقمي</div>
+    </div>
+    <div class="form-group">
+      <label>👤 اسم المستخدم</label>
+      <input type="text" class="form-input" id="login-username" placeholder="أدخل اسم المستخدم" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label>🔑 كلمة المرور</label>
+      <input type="password" class="form-input" id="login-password" placeholder="أدخل كلمة المرور">
+    </div>
+    <div class="login-hint">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;">بيانات المشاهد (اللاعب):</div>
+      <div class="hint-row">
+        <span class="hint-label">اسم المستخدم:</span>
+        <span class="hint-val">لاعب</span>
+      </div>
+      <div class="hint-row">
+        <span class="hint-label">كلمة المرور:</span>
+        <span class="hint-val">123</span>
+      </div>
+    </div>
+    <button class="login-btn" onclick="doLogin()">🚀 دخول</button>
+    <div class="login-error" id="login-error">❌ اسم المستخدم أو كلمة المرور غير صحيحة</div>
+  </div>
+  <div class="site-footer">
+    <p class="footer-designer">تصميم وتطوير : عبدالرحمن التهامي العربي</p>
+    <p class="footer-dua">لا تنسونا من صالح دعائكم لي و لوالدي 🤲</p>
+    <p class="footer-contact">لإستفساراتكم راسلونا على قناتي على اليوتيوب</p>
+    <div class="footer-links">
+      <a href="https://www.youtube.com/@%D8%B9%D8%A8%D8%AF%D8%A7%D9%84%D8%B1%D8%AD%D9%85%D9%86%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A-%D8%B12%D9%86" target="_blank" class="footer-btn-yt">▶ زيارة القناة مباشرة</a>
+      <a href="https://www.facebook.com/startway" target="_blank" class="footer-btn-fb">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.43c0-3.007 1.792-4.67 4.532-4.67 1.313 0 2.686.235 2.686.235v2.953h-1.514c-1.491 0-1.956.927-1.956 1.874v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
+        زيارة صفحتنا على فيسبوك
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PLAYER NAME SCREEN ========== -->
+<div id="player-name-screen" class="screen" style="min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:30px 20px;text-align:center;background:var(--bg);position:relative;z-index:1;">
+
+  <!-- Animated ring decoration -->
+  <div style="position:relative;margin-bottom:28px;">
+    <div style="width:110px;height:110px;border-radius:50%;border:3px solid rgba(0,212,255,0.3);display:flex;align-items:center;justify-content:center;margin:0 auto;box-shadow:0 0 40px rgba(0,212,255,0.2),inset 0 0 40px rgba(0,212,255,0.05);animation:pulsering 2s ease-in-out infinite;">
+      <span style="font-size:52px;line-height:1;">🎮</span>
+    </div>
+  </div>
+
+  <div style="font-family:'Orbitron',sans-serif;font-size:clamp(22px,5vw,42px);background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 20px rgba(0,212,255,0.4));margin-bottom:8px;">
+    مستكشف العالم الرقمي
+  </div>
+
+  <div id="pn-welcome-sub" style="font-size:16px;color:var(--muted);margin-bottom:40px;">
+    مرحباً! سجّل اسمك وانطلق في المغامرة 🚀
+  </div>
+
+  <!-- Name input area -->
+  <div style="width:100%;max-width:520px;margin-bottom:16px;">
+    <div style="font-size:14px;font-weight:700;color:var(--accent);margin-bottom:12px;letter-spacing:1px;">✏️ اسمك في اللعبة</div>
+    <input
+      type="text"
+      class="form-input"
+      id="player-name-input"
+      placeholder="أدخل اسمك هنا..."
+      autocomplete="off"
+      maxlength="30"
+      style="font-size:20px;padding:18px 24px;text-align:center;border-radius:16px;border:2px solid rgba(0,212,255,0.3);letter-spacing:1px;background:rgba(0,212,255,0.04);"
+    >
+  </div>
+
+  <div id="player-name-error" style="color:var(--red);font-size:14px;margin-bottom:12px;display:none;">❌ يرجى كتابة اسمك أولاً</div>
+
+  <div style="font-size:12px;color:var(--muted);margin-bottom:32px;">
+    💡 سيظهر اسمك على شاشة النتائج ولوحة المتصدرين
+  </div>
+
+  <!-- Big START button -->
+  <button
+    onclick="confirmPlayerName()"
+    style="background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:white;font-family:'Cairo',sans-serif;font-size:clamp(18px,3vw,26px);font-weight:900;padding:20px 70px;border-radius:50px;cursor:pointer;box-shadow:0 0 40px rgba(0,212,255,0.5),0 0 80px rgba(123,47,255,0.3);transition:all 0.3s;letter-spacing:1px;"
+    onmouseover="this.style.transform='scale(1.06)'"
+    onmouseout="this.style.transform='scale(1)'"
+  >
+    🚀 ابدأ المغامرة
+  </button>
+
+  <!-- Stats ribbon -->
+  <div style="display:flex;gap:24px;margin-top:44px;flex-wrap:wrap;justify-content:center;">
+    <div style="text-align:center;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.15);border-radius:14px;padding:14px 22px;">
+      <div style="font-size:26px;font-weight:900;color:var(--accent);">8</div>
+      <div style="font-size:11px;color:var(--muted);">مراحل</div>
+    </div>
+    <div style="text-align:center;background:rgba(123,47,255,0.06);border:1px solid rgba(123,47,255,0.2);border-radius:14px;padding:14px 22px;">
+      <div style="font-size:26px;font-weight:900;color:var(--accent2);">40</div>
+      <div style="font-size:11px;color:var(--muted);">سؤال</div>
+    </div>
+    <div style="text-align:center;background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.2);border-radius:14px;padding:14px 22px;">
+      <div style="font-size:26px;font-weight:900;color:var(--gold);">40</div>
+      <div style="font-size:11px;color:var(--muted);">نقطة</div>
+    </div>
+  </div>
+
+  <div class="site-footer">
+    <p class="footer-designer">تصميم وتطوير : عبدالرحمن التهامي العربي</p>
+    <p class="footer-dua">لا تنسونا من صالح دعائكم لي و لوالدي 🤲</p>
+    <p class="footer-contact">لإستفساراتكم راسلونا على قناتي على اليوتيوب</p>
+    <div class="footer-links">
+      <a href="https://www.youtube.com/@%D8%B9%D8%A8%D8%AF%D8%A7%D9%84%D8%B1%D8%AD%D9%85%D9%86%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A-%D8%B12%D9%86" target="_blank" class="footer-btn-yt">▶ زيارة القناة مباشرة</a>
+      <a href="https://www.facebook.com/startway" target="_blank" class="footer-btn-fb">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.43c0-3.007 1.792-4.67 4.532-4.67 1.313 0 2.686.235 2.686.235v2.953h-1.514c-1.491 0-1.956.927-1.956 1.874v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
+        زيارة صفحتنا على فيسبوك
+      </a>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes pulsering {
+  0%,100% { box-shadow:0 0 30px rgba(0,212,255,0.2),inset 0 0 30px rgba(0,212,255,0.05); transform:scale(1); }
+  50% { box-shadow:0 0 60px rgba(0,212,255,0.4),inset 0 0 40px rgba(0,212,255,0.1); transform:scale(1.04); }
+}
+#player-name-input:focus { border-color:var(--accent) !important; box-shadow:0 0 20px rgba(0,212,255,0.25); }
+</style>
+
+<!-- ========== INTRO SCREEN ========== -->
+<div id="intro-screen" class="screen">
+  <div class="welcome-user">
+    <span class="user-avatar" id="welcome-avatar">👤</span>
+    <span id="welcome-name">مرحباً!</span>
+  </div>
+  <div class="game-logo">🌐 Digital Explorer</div>
+  <div class="game-logo" style="font-size:clamp(16px,3vw,30px);margin-top:4px;">مستكشف العالم الرقمي</div>
+  <div class="game-subtitle">اختبر معلوماتك التكنولوجية عبر 8 مراحل تفاعلية</div>
+  <div class="total-badge">🏆 40 نقطة كاملة • 40 سؤال متنوع</div>
+
+  <div class="my-scores-box" id="my-scores-box" style="display:none">
+    <div class="my-scores-title">📊 نتائجك السابقة</div>
+    <div id="my-scores-list"></div>
+  </div>
+
+  <div class="levels-grid">
+    <div class="level-card"><div class="level-icon">🖥️</div><div class="level-name">المرحلة 1</div><div class="level-title-sm">غرفة الأجهزة</div><div class="level-desc">مكونات الحاسوب</div></div>
+    <div class="level-card"><div class="level-icon">🔒</div><div class="level-name">المرحلة 2</div><div class="level-title-sm">أمان الإنترنت</div><div class="level-desc">التصيد الإلكتروني</div></div>
+    <div class="level-card"><div class="level-icon">📁</div><div class="level-name">المرحلة 3</div><div class="level-title-sm">إتقان العمليات</div><div class="level-desc">إدارة الملفات</div></div>
+    <div class="level-card"><div class="level-icon">🤖</div><div class="level-name">المرحلة 4</div><div class="level-title-sm">عقل الآلة</div><div class="level-desc">الذكاء الاصطناعي</div></div>
+    <div class="level-card new-level"><div class="new-tag">جديد</div><div class="level-icon">💾</div><div class="level-name">المرحلة 5</div><div class="level-title-sm">أساسيات المعلومات</div><div class="level-desc">وحدات القياس</div></div>
+    <div class="level-card new-level"><div class="new-tag">جديد</div><div class="level-icon">🛡️</div><div class="level-name">المرحلة 6</div><div class="level-title-sm">حماية البيانات</div><div class="level-desc">الذاكرة والبرامج</div></div>
+    <div class="level-card new-level"><div class="new-tag">جديد</div><div class="level-icon">🖱️</div><div class="level-name">المرحلة 7</div><div class="level-title-sm">وحدات الإدخال</div><div class="level-desc">لوحة المفاتيح والشاشة</div></div>
+    <div class="level-card new-level"><div class="new-tag">جديد</div><div class="level-icon">🧠</div><div class="level-name">المرحلة 8</div><div class="level-title-sm">وحدة المعالجة</div><div class="level-desc">CPU واللوحة الأم</div></div>
+  </div>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+    <button class="start-btn" onclick="startGame()">🚀 ابدأ المغامرة</button>
+    <button class="admin-btn" id="admin-access-btn" onclick="goAdmin()" style="display:none">⚙️ لوحة المدير</button>
+  </div>
+  <button class="logout-btn" onclick="doLogout()">🚪 تسجيل الخروج</button>
+
+  <!-- FOOTER -->
+  <div class="site-footer">
+    <p class="footer-designer">تصميم وتطوير : عبدالرحمن التهامي العربي</p>
+    <p class="footer-dua">لا تنسونا من صالح دعائكم لي و لوالدي 🤲</p>
+    <p class="footer-contact">لإستفساراتكم راسلونا على قناتي على اليوتيوب</p>
+    <div class="footer-links">
+      <a href="https://www.youtube.com/@%D8%B9%D8%A8%D8%AF%D8%A7%D9%84%D8%B1%D8%AD%D9%85%D9%86%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A-%D8%B12%D9%86" target="_blank" class="footer-btn-yt">▶ زيارة القناة مباشرة</a>
+      <a href="https://www.facebook.com/startway" target="_blank" class="footer-btn-fb">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.43c0-3.007 1.792-4.67 4.532-4.67 1.313 0 2.686.235 2.686.235v2.953h-1.514c-1.491 0-1.956.927-1.956 1.874v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
+        زيارة صفحتنا على فيسبوك
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ========== GAME SCREEN ========== -->
+<div id="game-screen" class="screen">
+  <div class="game-header">
+    <div class="header-left">
+      <div class="header-title">DIGITAL EXPLORER</div>
+      <div class="player-name-badge">👤 <span id="player-name-hdr"></span></div>
+    </div>
+    <div class="progress-container">
+      <div class="progress-label" id="progress-label">المرحلة 1 من 8</div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill" style="width:5%"></div></div>
+    </div>
+    <div class="score-display">⭐ <span class="score-number" id="score-display">0</span> نقطة</div>
+    <div class="global-timer">⏳ <span class="global-timer-num" id="global-timer-num">10:00</span></div>
+  </div>
+  <div id="level-stage" class="level-stage"></div>
+</div>
+
+<!-- ========== RESULT SCREEN ========== -->
+<div id="result-screen" class="screen">
+  <div class="result-emoji" id="result-emoji">🏆</div>
+  <div class="result-title" id="result-title">تهانينا!</div>
+  <div class="result-player-name" id="result-player-name"></div>
+
+  <!-- Withdrawal notice -->
+  <div id="withdrawal-notice" style="display:none;background:rgba(255,61,107,0.1);border:1px solid rgba(255,61,107,0.35);border-radius:14px;padding:10px 24px;margin-bottom:10px;font-size:14px;font-weight:700;color:var(--red);">
+    🚪 انسحبت من اللعبة — هذه نقاطك حتى لحظة الانسحاب
+  </div>
+
+  <!-- Level Badge -->
+  <div id="result-level-badge" style="display:inline-block;margin-bottom:16px;padding:7px 28px;border-radius:50px;font-size:15px;font-weight:900;letter-spacing:1px;"></div>
+
+  <div style="font-size:14px;color:var(--muted);margin-bottom:6px;">نتيجتك النهائية</div>
+
+  <!-- Score display: X / 80 -->
+  <div style="display:flex;align-items:baseline;justify-content:center;gap:8px;margin-bottom:6px;">
+    <div class="result-score" id="result-score" style="margin-bottom:0;">0</div>
+    <div style="font-size:22px;color:var(--muted);font-weight:700;">/ 80</div>
+  </div>
+
+  <!-- Percentage -->
+  <div id="result-pct" style="font-size:20px;font-weight:900;margin-bottom:6px;color:var(--accent);"></div>
+
+  <!-- Perfect score message -->
+  <div id="result-perfect" style="display:none;background:linear-gradient(135deg,rgba(255,215,0,0.12),rgba(255,215,0,0.04));border:1px solid rgba(255,215,0,0.4);border-radius:14px;padding:10px 24px;margin-bottom:12px;font-size:14px;font-weight:700;color:var(--gold);">
+    🌟 مبروك! حققت النتيجة الكاملة — إجاباتك كلها صحيحة!
+  </div>
+
+  <div class="result-max" style="margin-bottom:20px;">من أصل 40 نقطة • 40 سؤال</div>
+
+  <div class="level-results" id="level-results"></div>
+  <div class="result-actions">
+    <button class="action-btn btn-save" onclick="saveResult()">💾 حفظ النتيجة</button>
+    <button class="action-btn btn-print" onclick="printResult()">🖨️ طباعة النتيجة</button>
+    <button class="action-btn btn-play-again" onclick="restartGame()">🔄 العب مجدداً</button>
+    <button class="action-btn btn-home" onclick="goHome()">🏠 الصفحة الرئيسية</button>
+  </div>
+  <div class="site-footer">
+    <p class="footer-designer">تصميم وتطوير : عبدالرحمن التهامي العربي</p>
+    <p class="footer-dua">لا تنسونا من صالح دعائكم لي و لوالدي 🤲</p>
+    <p class="footer-contact">لإستفساراتكم راسلونا على قناتي على اليوتيوب</p>
+    <div class="footer-links">
+      <a href="https://www.youtube.com/@%D8%B9%D8%A8%D8%AF%D8%A7%D9%84%D8%B1%D8%AD%D9%85%D9%86%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A-%D8%B12%D9%86" target="_blank" class="footer-btn-yt">▶ زيارة القناة مباشرة</a>
+      <a href="https://www.facebook.com/startway" target="_blank" class="footer-btn-fb">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.43c0-3.007 1.792-4.67 4.532-4.67 1.313 0 2.686.235 2.686.235v2.953h-1.514c-1.491 0-1.956.927-1.956 1.874v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
+        زيارة صفحتنا على فيسبوك
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ========== ADMIN SCREEN ========== -->
+<div id="admin-screen" class="screen">
+  <div class="admin-header">
+    <div class="admin-title">⚙️ لوحة تحكم المدير — عبدالرحمن</div>
+    <button class="btn-back" onclick="goHome()">← الصفحة الرئيسية</button>
+  </div>
+  <div class="admin-content">
+    <div class="admin-stats" id="admin-stats">
+      <div class="stat-card"><div class="stat-num" id="stat-players">0</div><div class="stat-label">عدد اللاعبين</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-avg">0</div><div class="stat-label">متوسط النتائج</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-top">0</div><div class="stat-label">أعلى نتيجة</div></div>
+    </div>
+    <div class="results-table-wrap">
+      <div class="results-table-title">
+        <span>📋 نتائج جميع اللاعبين</span>
+        <span style="font-size:12px;color:var(--muted)" id="results-count"></span>
+      </div>
+      <div id="admin-results-container">
+        <div class="empty-results">لا توجد نتائج بعد</div>
+      </div>
+    </div>
+    <!-- Email Settings Box -->
+    <div id="email-settings-box" style="background:var(--panel);border:1px solid rgba(0,212,255,0.2);border-radius:16px;padding:24px;margin-bottom:24px;">
+      <div style="font-size:15px;font-weight:700;color:var(--accent);margin-bottom:16px;">📧 إعداد إرسال النتائج بالبريد الإلكتروني</div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;">📮 بريدك الإلكتروني (الذي سيستقبل النتائج)</label>
+        <input type="email" id="admin-email-input" class="form-input" placeholder="example@gmail.com" style="font-size:14px;padding:10px 14px;">
+      </div>
+      <div style="margin-bottom:14px;">
+        <div style="background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.15);border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:12px;line-height:1.9;color:var(--muted);">
+          <strong style="color:var(--accent);">📋 خطوات إعداد EmailJS (مجاني):</strong><br>
+          1️⃣ اذهب إلى <a href="https://www.emailjs.com" target="_blank" style="color:var(--accent);">emailjs.com</a> وسجّل حساباً مجانياً<br>
+          2️⃣ أضف خدمة بريد (Gmail أو Outlook) ← احفظ <strong style="color:var(--gold);">Service ID</strong><br>
+          3️⃣ أنشئ Template بهذه المتغيرات: <code style="background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;">{{student_name}} {{score}} {{percentage}} {{rating}} {{date}}</code><br>
+          4️⃣ احفظ <strong style="color:var(--gold);">Template ID</strong> و <strong style="color:var(--gold);">Public Key</strong> من Account ← API Keys
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:5px;">🔑 Public Key</label>
+            <input type="text" id="ejs-public-key" class="form-input" placeholder="مثال: user_xxxx" style="font-size:12px;padding:8px 12px;">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:5px;">⚙️ Service ID</label>
+            <input type="text" id="ejs-service-id" class="form-input" placeholder="مثال: service_xxxx" style="font-size:12px;padding:8px 12px;">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:5px;">📄 Template ID</label>
+            <input type="text" id="ejs-template-id" class="form-input" placeholder="مثال: template_xxxx" style="font-size:12px;padding:8px 12px;">
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <button onclick="saveEmailSettings()" style="background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:white;font-family:'Cairo',sans-serif;font-size:14px;font-weight:700;padding:10px 24px;border-radius:50px;cursor:pointer;">💾 حفظ الإعدادات</button>
+        <button onclick="sendTestEmail()" style="background:rgba(0,255,136,0.1);border:2px solid rgba(0,255,136,0.3);color:var(--green);font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;padding:10px 20px;border-radius:50px;cursor:pointer;">🧪 إرسال بريد تجريبي</button>
+        <span id="email-save-status" style="font-size:13px;font-weight:700;"></span>
+      </div>
+    </div>
+    <div class="admin-actions">
+      <button class="btn-print-admin" onclick="printAdminResults()">🖨️ طباعة جميع النتائج</button>
+      <button class="btn-clear" onclick="clearAllResults()">🗑️ مسح جميع النتائج</button>
+      <button class="btn-back" onclick="goHome()">← رجوع</button>
+    </div>
+  </div>
+  <div class="site-footer">
+    <p class="footer-designer">تصميم وتطوير : عبدالرحمن التهامي العربي</p>
+    <p class="footer-dua">لا تنسونا من صالح دعائكم لي و لوالدي 🤲</p>
+    <p class="footer-contact">لإستفساراتكم راسلونا على قناتي على اليوتيوب</p>
+    <div class="footer-links">
+      <a href="https://www.youtube.com/@%D8%B9%D8%A8%D8%AF%D8%A7%D9%84%D8%B1%D8%AD%D9%85%D9%86%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A-%D8%B12%D9%86" target="_blank" class="footer-btn-yt">▶ زيارة القناة مباشرة</a>
+      <a href="https://www.facebook.com/startway" target="_blank" class="footer-btn-fb">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.43c0-3.007 1.792-4.67 4.532-4.67 1.313 0 2.686.235 2.686.235v2.953h-1.514c-1.491 0-1.956.927-1.956 1.874v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
+        زيارة صفحتنا على فيسبوك
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== STARS ==========
+const starsEl = document.getElementById('stars');
+for (let i = 0; i < 80; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;opacity:${0.2+Math.random()*0.5}`;
+  starsEl.appendChild(s);
+}
+
+// ========== USERS ==========
+const USERS = {
+  'عبدالرحمن': { password: '250285', role: 'admin' },
+  'لاعب': { password: '123', role: 'viewer' }
+};
+
+let currentUser = null;
+let timerInterval = null;
+let timeLeft = 25;
+let globalTimerInterval = null;
+let globalTimeLeft = 600; // 10 minutes in seconds
+let lifelineCount = 7;
+
+// ========== GAME DATA — 40 QUESTIONS ==========
+const LEVELS = [
+  {
+    id:1, icon:'🖥️', name:'غرفة الأجهزة', badge:'Hardware Lab', isManhaj:false,
+    scenario:'أنت <strong>مهندس صيانة</strong> في شركة تقنية. استخدم معرفتك بمكونات الحاسوب للإجابة الصحيحة!',
+    questions:[
+      {
+        type:'choice', text:'أي مكون مسؤول عن "الذاكرة قصيرة المدى" التي تُخزّن البيانات النشطة أثناء تشغيل البرامج؟',
+        options:['CPU (المعالج المركزي)','RAM (الذاكرة العشوائية)','HDD (القرص الصلب)','GPU (المعالج الرسومي)'],
+        correct:1,
+        feedback:{correct:'✅ ممتاز! الـ RAM هي ذاكرة مؤقتة تُخزّن البيانات النشطة، وتُمسح عند إيقاف التشغيل.',wrong:'❌ الإجابة الصحيحة هي RAM. إنها الذاكرة العشوائية التي تُخزّن البيانات النشطة مؤقتاً.'}
+      },
+      {
+        type:'choice', text:'جهاز يُعاني من بطء شديد رغم أن المعالج لا يعمل بكامل طاقته. ما أكثر سبب محتمل؟',
+        options:['المعالج تالف','ذاكرة الـ RAM ممتلئة أو قليلة','بطاقة الشاشة معطوبة','لوحة الأم قديمة'],
+        correct:1,
+        feedback:{correct:'✅ صحيح! عندما تكون الـ RAM ممتلئة، يستخدم النظام القرص الصلب كبديل مما يُسبب بطئاً شديداً.',wrong:'❌ السبب الأكثر شيوعاً هو امتلاء الـ RAM.'}
+      },
+      {
+        type:'drag', text:'طابق كل مكون مع وظيفته الأساسية:',
+        items:['CPU','SSD','GPU','Motherboard'],
+        zones:[{label:'تخزين دائم سريع',answer:'SSD'},{label:'تنفيذ العمليات الحسابية',answer:'CPU'},{label:'توصيل جميع المكونات',answer:'Motherboard'},{label:'معالجة الصور والألعاب',answer:'GPU'}]
+      },
+      {
+        type:'choice', text:'ما الفرق بين ذاكرة التخزين المؤقت (Cache) والذاكرة RAM؟',
+        options:['لا فرق بينهما','Cache أصغر حجماً وأسرع من RAM وتقع بداخل المعالج','RAM أسرع من Cache','Cache تحتفظ بالبيانات بعد إيقاف الجهاز'],
+        correct:1,
+        feedback:{correct:'✅ ممتاز! Cache ذاكرة سريعة جداً داخل المعالج لتخزين البيانات الأكثر استخداماً.',wrong:'❌ الصحيح: Cache أصغر وأسرع من RAM وتقع داخل المعالج لتسريع الوصول للبيانات المتكررة.'}
+      },
+      {
+        type:'choice', text:'ما وحدة قياس سرعة المعالج (CPU)؟',
+        options:['ميغابايت (MB)','جيجاهيرتز (GHz)','جيجابايت (GB)','تيرابايت (TB)'],
+        correct:1,
+        feedback:{correct:'✅ صحيح! سرعة المعالج تُقاس بالجيجاهيرتز (GHz)، كلما زادت القيمة كان المعالج أسرع.',wrong:'❌ سرعة المعالج تُقاس بالجيجاهيرتز (GHz). أما الجيجابايت فهي لقياس التخزين.'}
+      }
+    ]
+  },
+  {
+    id:2, icon:'🔒', name:'أمان الإنترنت', badge:'Internet Safety', isManhaj:false,
+    scenario:'مهمتك <strong>حماية بيانات الشركة</strong> من هجمات التصيد الإلكتروني والمخاطر الرقمية.',
+    questions:[
+      {
+        type:'choice', text:'وصلك بريد إلكتروني من "support@g00gle-security.com" يطلب تحديث كلمة مرور حسابك. ماذا تفعل؟',
+        options:['تضغط على الرابط وتُحدّث كلمة المرور','تتجاهل الرسالة وتحذفها','تبلّغ عنها كـ Phishing وتتحقق مباشرة من موقع Google الرسمي','تُرسلها لزملائك'],
+        correct:2,
+        feedback:{correct:'✅ ممتاز! g00gle بصفر بدل O هجوم تصيد. دائماً تحقق من الرسائل عبر المواقع الرسمية.',wrong:'❌ الصحيح هو التبليغ عنها والذهاب للموقع الرسمي. الرابط "g00gle-security.com" مزيف!'}
+      },
+      {
+        type:'choice', text:'أي من كلمات المرور التالية تعتبر الأقوى؟',
+        options:['محمد1990','Pass@123','Xk9#mL2$vQ7!','football2024'],
+        correct:2,
+        feedback:{correct:'✅ صحيح! كلمة المرور القوية تجمع أحرفاً كبيرة وصغيرة وأرقاماً ورموزاً عشوائية.',wrong:'❌ الأقوى هي "Xk9#mL2$vQ7!" لأنها تجمع أحرفاً كبيرة وصغيرة وأرقاماً ورموزاً.'}
+      },
+      {
+        type:'choice', text:'ما المقصود بـ HTTPS في عنوان المتصفح؟',
+        options:['الموقع محظور من الحكومة','الاتصال مشفّر وآمن','الموقع مجاني تماماً','الموقع يعمل بسرعة عالية'],
+        correct:1,
+        feedback:{correct:'✅ ممتاز! HTTPS يعني أن البيانات المنقولة مشفرة.',wrong:'❌ HTTPS يعني أن الاتصال مشفّر باستخدام SSL/TLS.'}
+      },
+      {
+        type:'choice', text:'ما هو الـ VPN ولماذا يُستخدم؟',
+        options:['برنامج لتسريع الإنترنت','شبكة افتراضية خاصة تُشفّر الاتصال وتحمي الخصوصية','برنامج لمكافحة الفيروسات','نوع من أنواع المتصفحات'],
+        correct:1,
+        feedback:{correct:'✅ صحيح! VPN يُنشئ نفقاً مشفراً لحماية بياناتك وإخفاء هويتك على الإنترنت.',wrong:'❌ VPN هي شبكة افتراضية خاصة تُشفّر الاتصال وتحمي الخصوصية وتُخفي عنوان IP.'}
+      },
+      {
+        type:'choice', text:'ما هو "الجدار الناري" (Firewall)؟',
+        options:['جهاز لتبريد الحاسوب','نظام حماية يراقب ويتحكم في حركة الشبكة','برنامج لتسريع الإنترنت','نوع من أنواع برامج مكافحة الفيروسات'],
+        correct:1,
+        feedback:{correct:'✅ ممتاز! الجدار الناري يراقب ويتحكم في حركة البيانات الواردة والصادرة للحماية من الهجمات.',wrong:'❌ الجدار الناري (Firewall) هو نظام أمني يراقب ويُصفّي حركة البيانات في الشبكة.'}
+      }
+    ]
+  },
+  {
+    id:3, icon:'📁', name:'إتقان العمليات', badge:'Productivity Hub', isManhaj:false,
+    scenario:'أنت تعمل على <strong>مشروع رقمي كبير</strong> وتحتاج لتنظيم ملفاتك وعملياتك بكفاءة.',
+    questions:[
+      {
+        type:'choice', text:'ما الاختصار الصحيح لأمر "تراجع عن آخر إجراء" (Undo) في Windows؟',
+        options:['Ctrl + Z','Ctrl + Y','Alt + F4','Ctrl + X'],
+        correct:0,
+        feedback:{correct:'✅ صحيح! Ctrl+Z هو اختصار Undo العالمي في Windows.',wrong:'❌ الصحيح هو Ctrl+Z لإلغاء آخر تغيير قمت به.'}
+      },
+      {
+        type:'sequence', text:'رتّب خطوات نقل ملف من مجلد إلى آخر بطريقة صحيحة:',
+        items:['اضغط Ctrl+V في المجلد الهدف','افتح مستكشف الملفات','انتقل إلى المجلد الهدف','انقر على الملف المطلوب','اضغط Ctrl+X لقص الملف'],
+        correct:[1,3,4,2,0]
+      },
+      {
+        type:'choice', text:'ما الفرق الأساسي بين "حذف" ملف وإرساله إلى "سلة المحذوفات"؟',
+        options:['لا فرق، كلاهما يحذف الملف نهائياً','سلة المحذوفات تحتفظ بالملف مؤقتاً ويمكن استعادته','الحذف أسرع من إرساله للسلة','سلة المحذوفات تضغط الملفات تلقائياً'],
+        correct:1,
+        feedback:{correct:'✅ صحيح! الإرسال للسلة لا يحذف الملف نهائياً بل يُبقيه قابلاً للاستعادة.',wrong:'❌ سلة المحذوفات تحفظ الملفات مؤقتاً. الحذف النهائي يتم عبر Shift+Delete أو تفريغ السلة.'}
+      },
+      {
+        type:'choice', text:'ما اختصار لقطة الشاشة (Screenshot) في Windows 10/11؟',
+        options:['Ctrl + S','Windows + PrtScn','Alt + Tab','Ctrl + P'],
+        correct:1,
+        feedback:{correct:'✅ ممتاز! Windows+PrtScn يأخذ لقطة الشاشة ويحفظها تلقائياً في مجلد الصور.',wrong:'❌ الصحيح هو Windows+PrtScn الذي يحفظ لقطة الشاشة في مجلد Screenshots.'}
+      },
+      {
+        type:'choice', text:'ما وظيفة نظام الملفات NTFS في Windows؟',
+        options:['نوع من أنواع الفيروسات','نظام ملفات متقدم يدعم التشفير والأمان وملفات كبيرة الحجم','برنامج لإدارة الطابعة','بروتوكول للاتصال بالإنترنت'],
+        correct:1,
+        feedback:{correct:'✅ صحيح! NTFS نظام ملفات متقدم يدعم تشفير الملفات والصلاحيات والملفات الكبيرة جداً.',wrong:'❌ NTFS (New Technology File System) هو نظام ملفات يدعم الأمان والتشفير وملفات فوق 4GB.'}
+      }
+    ]
+  },
+  {
+    id:4, icon:'🤖', name:'عقل الآلة', badge:'AI Core', isManhaj:false,
+    scenario:'ادخل عالم <strong>الذكاء الاصطناعي</strong>! ستواجه مفاهيم تقنية وسيناريوهات أخلاقية حقيقية.',
+    questions:[
+      {
+        type:'choice', text:'ما المقصود بـ "تعلّم الآلة" (Machine Learning)؟',
+        options:['برمجة الآلة بكل القواعد يدوياً','قدرة الآلة على التعلم من البيانات دون برمجة صريحة لكل حالة','استخدام الإنترنت لتحديث البرامج','محاكاة الدماغ البشري بالكامل'],
+        correct:1,
+        feedback:{correct:'✅ ممتاز! تعلّم الآلة يعني أن النظام يتعلم الأنماط من البيانات ويتحسّن تلقائياً.',wrong:'❌ تعلّم الآلة هو قدرة الأنظمة على التعلم من البيانات واستخلاص الأنماط تلقائياً.'}
+      },
+      {
+        type:'choice', text:'لماذا يُعد "التحيز في البيانات" (Data Bias) خطراً على أنظمة الذكاء الاصطناعي؟',
+        options:['يُبطئ سرعة معالجة البيانات','يجعل النموذج يتعلم أنماطاً غير عادلة تنعكس على قراراته','يزيد من حجم الملفات','يسبب أعطالاً في الأجهزة'],
+        correct:1,
+        feedback:{correct:'✅ صحيح! إذا كانت بيانات التدريب تحتوي على تحيزات، سيتعلمها النموذج ويُعيد إنتاجها.',wrong:'❌ التحيز في البيانات خطير لأن النموذج يتعلم منها ويُكرّر أي ظلم موجود فيها.'}
+      },
+      {
+        type:'choice', text:'ما هو الفرق بين الذكاء الاصطناعي الضيق (Narrow AI) والذكاء الاصطناعي العام (General AI)؟',
+        options:['لا فرق بينهما','Narrow AI متخصص في مهمة واحدة، بينما General AI يؤدي أي مهمة إنسانية','General AI أسرع من Narrow AI فقط','Narrow AI أحدث من General AI'],
+        correct:1,
+        feedback:{correct:'✅ ممتاز! الذكاء الضيق (كتعرف الوجوه) يختص بمهمة واحدة، بينما الذكاء العام لم يتحقق بعد.',wrong:'❌ Narrow AI يؤدي مهمة واحدة بكفاءة عالية (كـ ChatGPT)، أما General AI فهو ذكاء شامل لم يتحقق بعد.'}
+      },
+      {
+        type:'choice', text:'ما المقصود بـ "الشبكات العصبية الاصطناعية" (Neural Networks)؟',
+        options:['شبكات إنترنت خاصة بالأطباء','نماذج حاسوبية مُلهمة ببنية الدماغ البشري تتعلم من أمثلة','كابلات خاصة للاتصال السريع','نوع من أنواع الفيروسات'],
+        correct:1,
+        feedback:{correct:'✅ صحيح! الشبكات العصبية مستوحاة من الدماغ البشري وتتعلم من البيانات عبر طبقات متعددة.',wrong:'❌ الشبكات العصبية الاصطناعية نماذج حاسوبية تحاكي بنية الدماغ وتتعلم من الأمثلة.'}
+      },
+      {
+        type:'choice', text:'أي من التطبيقات التالية يعتمد بشكل رئيسي على الذكاء الاصطناعي؟',
+        options:['المفكرة (Notepad)','نظام التوصيات في Netflix','الآلة الحاسبة','برنامج الرسام (Paint)'],
+        correct:1,
+        feedback:{correct:'✅ ممتاز! Netflix يستخدم خوارزميات AI لتحليل تفضيلاتك واقتراح المحتوى المناسب.',wrong:'❌ Netflix يعتمد على AI لتحليل سلوك المشاهدة وتقديم توصيات مخصصة لكل مستخدم.'}
+      }
+    ]
+  },
+  {
+    id:5, icon:'💾', name:'أساسيات المعلومات', badge:'منهج ص 7-30', isManhaj:true,
+    scenario:'أنت طالب يستعد لاختبار <strong>تقنية المعلومات</strong>. راجع مفاهيمك الأساسية!',
+    questions:[
+      {
+        type:'choice', text:'ما هي أصغر وحدة قياس للمعلومات في الحاسب؟',
+        options:['بايت','بت','كيلوبايت','ميغابايت'],
+        correct:1,
+        feedback:{correct:'✅ ممتاز! البت (Bit) هو أصغر وحدة معلومات في الحاسب، وهو إما 0 أو 1.',wrong:'❌ الصحيح هو البت (Bit). البايت يساوي 8 بتات.'}
+      },
+      {
+        type:'choice', text:'أي نوع من الحواسب يمتاز بسعة تخزينية ضخمة ويخدم مئات المستخدمين في آن واحد؟',
+        options:['الحاسوب المحمول','الحاسوب اللوحي','الحاسوب الرئيسي (Mainframe)','الحاسوب الشخصي'],
+        correct:2,
+        feedback:{correct:'✅ صحيح! الحاسوب الرئيسي (Mainframe) مصمم للمؤسسات الكبرى.',wrong:'❌ الصحيح هو الحاسوب الرئيسي (Mainframe) المستخدم في البنوك والجهات الكبرى.'}
+      },
+      {
+        type:'choice', text:'ما هي الميزة الرئيسية لسواقة SSD مقارنة بـ HDD؟',
+        options:['أرخص ثمناً من HDD','أسرع في القراءة والكتابة ولا تحتوي أجزاء متحركة','سعة تخزينية أكبر','تستهلك طاقة أكثر'],
+        correct:1,
+        feedback:{correct:'✅ ممتاز! SSD أسرع بكثير من HDD وأكثر متانة لعدم وجود أجزاء متحركة.',wrong:'❌ الميزة الرئيسية لـ SSD هي السرعة الفائقة وغياب الأجزاء المتحركة.'}
+      },
+      {
+        type:'choice', text:'كم بايت يساوي الكيلوبايت (KB) الواحد؟',
+        options:['100 بايت','512 بايت','1024 بايت','2048 بايت'],
+        correct:2,
+        feedback:{correct:'✅ صحيح! 1 كيلوبايت = 1024 بايت. والجيجابايت = 1024 ميغابايت.',wrong:'❌ 1 كيلوبايت = 1024 بايت. تذكر: القياسات الثنائية تعتمد على قوى العدد 2.'}
+      },
+      {
+        type:'choice', text:'أي نوع الحواسب الأضخم والأسرع في العالم يستخدم للتنبؤات الجوية والبحوث العلمية؟',
+        options:['الحاسوب الشخصي','الحاسوب اللوحي','الحاسوب العملاق (Supercomputer)','الحاسوب المحمول'],
+        correct:2,
+        feedback:{correct:'✅ ممتاز! الحواسيب العملاقة (Supercomputers) تستخدم للتنبؤات الجوية والنمذجة النووية وأبحاث الفضاء.',wrong:'❌ الحاسوب العملاق (Supercomputer) هو الأسرع ويُستخدم للعمليات العلمية المعقدة.'}
+      }
+    ]
+  },
+  {
+    id:6, icon:'🛡️', name:'حماية البيانات', badge:'منهج - أمن المعلومات', isManhaj:true,
+    scenario:'اختبر فهمك لمفاهيم <strong>أمن المعلومات</strong> من المنهج الدراسي.',
+    questions:[
+      {
+        type:'choice', text:'أي نوع من الذاكرة يفقد محتوياته تلقائياً بمجرد إيقاف تشغيل الجهاز؟',
+        options:['ROM (ذاكرة القراءة فقط)','RAM (الذاكرة العشوائية)','القرص الصلب HDD','بطاقة الذاكرة SD'],
+        correct:1,
+        feedback:{correct:'✅ صحيح! RAM ذاكرة متطايرة تفقد محتواها عند انقطاع التيار.',wrong:'❌ الصحيح هو RAM. إنها ذاكرة مؤقتة تُمسح تلقائياً عند إيقاف الجهاز.'}
+      },
+      {
+        type:'choice', text:'ما هو البرنامج الضار الذي يتكاثر ذاتياً عبر الشبكة دون الحاجة لتدخل المستخدم؟',
+        options:['الفيروسات (Viruses)','الديدان (Worms)','أحصنة طروادة (Trojans)','برامج التجسس (Spyware)'],
+        correct:1,
+        feedback:{correct:'✅ ممتاز! الديدان (Worms) تنتشر ذاتياً عبر الشبكات دون تدخل المستخدم.',wrong:'❌ الصحيح هو الديدان (Worms). تمتاز بالتكاثر التلقائي عبر الشبكة.'}
+      },
+      {
+        type:'choice', text:'حماية المعلومات من التلاعب غير المصرح به يُعرف بـ:',
+        options:['سرية البيانات (Confidentiality)','سلامة البيانات (Integrity)','توفر البيانات (Availability)','مصادقة المستخدم (Authentication)'],
+        correct:1,
+        feedback:{correct:'✅ صحيح! سلامة البيانات (Integrity) تعني ضمان عدم تعديل المعلومات بشكل غير مصرح.',wrong:'❌ الصحيح هو سلامة البيانات (Integrity). إحدى ركائز CIA الثلاث في أمن المعلومات.'}
+      },
+      {
+        type:'choice', text:'ما هو "التشفير" (Encryption) في مجال أمن المعلومات؟',
+        options:['عملية حذف الملفات الحساسة','تحويل البيانات إلى صيغة غير مقروءة إلا بمفتاح خاص','ضغط الملفات لتوفير المساحة','نسخ البيانات احتياطياً'],
+        correct:1,
+        feedback:{correct:'✅ ممتاز! التشفير يحوّل البيانات لصيغة مشفرة لا يمكن قراءتها بدون مفتاح الفك.',wrong:'❌ التشفير (Encryption) هو تحويل البيانات لصيغة غير مقروءة تحمي خصوصية البيانات.'}
+      },
+      {
+        type:'choice', text:'ما هو "النسخ الاحتياطي" (Backup) ولماذا هو مهم؟',
+        options:['عملية حذف الملفات القديمة','نسخ من البيانات تُحفظ في مكان آمن للاسترداد عند الحاجة','نوع من الفيروسات','برنامج لتسريع الجهاز'],
+        correct:1,
+        feedback:{correct:'✅ صحيح! النسخ الاحتياطي يحمي البيانات من الفقدان بسبب الأعطال أو الهجمات الإلكترونية.',wrong:'❌ النسخ الاحتياطي (Backup) نسخ من البيانات محفوظة في مكان آمن للاسترداد عند فقدانها.'}
+      }
+    ]
+  },
+  {
+    id:7, icon:'🖱️', name:'وحدات الإدخال والإخراج', badge:'منهج - I/O Devices', isManhaj:true,
+    scenario:'تعلّم عن <strong>أجهزة الإدخال والإخراج</strong> من شرائح المنهج.',
+    questions:[
+      {
+        type:'choice', text:'ما هي وحدة قياس حجم الشاشة (Monitor)؟',
+        options:['السنتيمتر','البوصة (Inch)','الميلليمتر','البكسل (Pixel)'],
+        correct:1,
+        feedback:{correct:'✅ صحيح! حجم الشاشة يُقاس بالبوصة (Inch) للقطر الداخلي.',wrong:'❌ حجم الشاشة يُقاس بالبوصة (Inch). أما دقة الصورة فتُقاس بالبكسل (Pixels).'}
+      },
+      {
+        type:'choice', text:'أي من الأجهزة التالية يُعدّ وحدة إدخال وإخراج في آنٍ واحد؟',
+        options:['لوحة المفاتيح','شاشة اللمس (Touch Screen)','السماعات','الطابعة'],
+        correct:1,
+        feedback:{correct:'✅ صحيح! شاشة اللمس تُستخدم للإدخال باللمس والإخراج بعرض النتائج في نفس الوقت.',wrong:'❌ شاشة اللمس هي وحدة إدخال وإخراج مزدوجة (I/O).'}
+      },
+      {
+        type:'choice', text:'أي نوع من الطابعات يستخدم شعاع الليزر ليمسح سطحاً حساساً للضوء؟',
+        options:['الطابعات النقطية (Dot Matrix)','طابعات نفث الحبر (Ink Jet)','طابعات الليزر (Laser)','الراسمات (Plotters)'],
+        correct:2,
+        feedback:{correct:'✅ ممتاز! طابعات الليزر تستخدم شعاعاً ليزرياً وتتميز بجودة عالية وسرعة.',wrong:'❌ الصحيح هو طابعات الليزر (Laser). تعمل بشعاع ليزر يمسح سطحاً حساساً للضوء.'}
+      },
+      {
+        type:'choice', text:'ما وظيفة الماسح الضوئي (Scanner)؟',
+        options:['طباعة الوثائق','تحويل المستندات الورقية والصور إلى ملفات رقمية','عرض الصور على الشاشة','حفظ البيانات على الإنترنت'],
+        correct:1,
+        feedback:{correct:'✅ صحيح! الماسح الضوئي يحوّل الوثائق والصور الورقية إلى ملفات رقمية.',wrong:'❌ الماسح الضوئي (Scanner) يُحوّل المستندات والصور الورقية إلى صور رقمية يمكن تخزينها.'}
+      },
+      {
+        type:'choice', text:'ما الفرق بين لوحة المفاتيح الميكانيكية والغشائية (Membrane)؟',
+        options:['لا فرق بينهما','الميكانيكية تستخدم مفاتيح مستقلة وأكثر متانة وصوتاً، بينما الغشائية أرق وأهدأ','الغشائية أسرع من الميكانيكية','الميكانيكية رخيصة دائماً'],
+        correct:1,
+        feedback:{correct:'✅ ممتاز! الميكانيكية مفضلة للألعاب والكتابة المكثفة لمتانتها، والغشائية للاستخدام العادي.',wrong:'❌ الميكانيكية تستخدم مفاتيح مستقلة أكثر متانة، والغشائية أرق وأهدأ وأقل تكلفة.'}
+      }
+    ]
+  },
+  {
+    id:8, icon:'🧠', name:'وحدة المعالجة والبيانات', badge:'منهج - CPU & Data', isManhaj:true,
+    scenario:'أنت في قلب الحاسب الآلي! تعرّف على <strong>وحدة المعالجة المركزية</strong> واللوحة الأم.',
+    questions:[
+      {
+        type:'choice', text:'ما الفرق بين "البيانات" و"المعلومات" في سياق الحاسب الآلي؟',
+        options:['لا فرق بينهما','البيانات هي المدخلات الخام، والمعلومات هي النتائج ذات المعنى بعد المعالجة','المعلومات هي المدخلات الخام، والبيانات هي النتائج','البيانات أكبر حجماً من المعلومات دائماً'],
+        correct:1,
+        feedback:{correct:'✅ ممتاز! البيانات مدخلات خام، والمعلومات مخرجات ذات معنى بعد المعالجة.',wrong:'❌ البيانات = المدخلات الخام. المعلومات = المخرجات النهائية ذات معنى بعد المعالجة.'}
+      },
+      {
+        type:'choice', text:'ما وظيفة اللوحة الأم (Motherboard) في الحاسب الآلي؟',
+        options:['تخزين البيانات بشكل دائم','معالجة العمليات الحسابية فقط','اللوحة الإلكترونية المركزية التي تُثبَّت عليها جميع القطع لضمان تواصلها','عرض الصور والفيديو على الشاشة'],
+        correct:2,
+        feedback:{correct:'✅ صحيح! اللوحة الأم هي اللوحة الإلكترونية المركزية التي تُثبّت وتُوصّل جميع المكونات.',wrong:'❌ اللوحة الأم هي العمود الفقري للحاسب؛ تُثبَّت عليها جميع القطع الداخلية.'}
+      },
+      {
+        type:'choice', text:'ما الميزة التي تميّز معالج Core i5 عن Core i3؟',
+        options:['Core i5 لا يدعم Hyper-threading','Core i5 يدعم تقنية Turbo Boost التي تمنحه قدرة إضافية عند الحاجة','Core i5 أرخص ثمناً','Core i5 يعمل بنواة واحدة فقط'],
+        correct:1,
+        feedback:{correct:'✅ ممتاز! تقنية Turbo Boost في Core i5 تتيح رفع السرعة تلقائياً عند الحاجة.',wrong:'❌ الميزة الرئيسية هي تقنية Turbo Boost المتوفرة في i5 دون i3.'}
+      },
+      {
+        type:'choice', text:'ما المقصود بـ "سرعة الحافلة" (Bus Speed) في الحاسب؟',
+        options:['سرعة القرص الصلب','سرعة نقل البيانات بين مكونات الحاسب عبر قنوات الاتصال الداخلية','سرعة الاتصال بالإنترنت','سرعة تشغيل برامج الحاسب'],
+        correct:1,
+        feedback:{correct:'✅ صحيح! Bus Speed هي سرعة نقل البيانات بين المعالج والذاكرة والمكونات الأخرى.',wrong:'❌ Bus Speed هي سرعة نقل البيانات عبر قنوات الاتصال الداخلية بين مكونات الحاسب.'}
+      },
+      {
+        type:'choice', text:'أي وحدة قياس تُستخدم لقياس سعة القرص الصلب في الوقت الحالي غالباً؟',
+        options:['كيلوبايت (KB)','ميغابايت (MB)','جيجابايت (GB) أو تيرابايت (TB)','بايت (Byte)'],
+        correct:2,
+        feedback:{correct:'✅ ممتاز! الأقراص الصلبة الحديثة تُقاس بالجيجابايت أو التيرابايت.',wrong:'❌ الأقراص الصلبة الحديثة تُقاس بالجيجابايت (GB) أو التيرابايت (TB)، مثل 1TB = 1024GB.'}
+      }
+    ]
+  }
+];
+
+const TOTAL_LEVELS = 8;
+const MAX_SCORE = 40;
+const QUESTIONS_PER_LEVEL = 5;
+
+let state = {
+  currentLevel: 0,
+  currentQuestion: 0,
+  score: 0,
+  levelScores: [0,0,0,0,0,0,0,0],
+  answered: false,
+  dragState: { dragging: null },
+  skippedQuestions: [],
+  isShowingSkipped: false,
+  skippedIndex: 0,
+  shuffledQuestions: [] // per-session shuffled options for choice questions
+};
+
+// ========== SHUFFLE OPTIONS PER SESSION ==========
+// Builds a lookup: shuffledQuestions[levelIdx][questionIdx] = { options, correct }
+function shuffleAllQuestions() {
+  const result = [];
+  LEVELS.forEach((lvl, li) => {
+    const levelArr = [];
+    lvl.questions.forEach((q, qi) => {
+      if (q.type === 'choice') {
+        // Build indexed pairs, shuffle, track new correct index
+        const pairs = q.options.map((text, i) => ({ text, isCorrect: i === q.correct }));
+        // Fisher-Yates shuffle
+        for (let i = pairs.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
+        }
+        const newCorrect = pairs.findIndex(p => p.isCorrect);
+        levelArr.push({ options: pairs.map(p => p.text), correct: newCorrect });
+      } else {
+        levelArr.push(null); // drag/sequence: no shuffle needed
+      }
+    });
+    result.push(levelArr);
+  });
+  return result;
+}
+
+// ========== STORAGE ==========
+function getStorageKey() { return 'digitalExplorerResults'; }
+function loadResults() {
+  try { return JSON.parse(localStorage.getItem(getStorageKey()) || '[]'); }
+  catch(e) { return []; }
+}
+function saveResults(results) {
+  try { localStorage.setItem(getStorageKey(), JSON.stringify(results)); } catch(e) {}
+}
+
+// ========== RATING CALCULATION ==========
+function calculateRating(score) {
+  const pct = Math.round((score / MAX_SCORE) * 100);
+  if (score === MAX_SCORE) {
+    return { rating: 'ممتاز', emoji: '🌟', class: 'rating-excellent' };
+  } else if (pct >= 85) {
+    return { rating: 'جيد جداً', emoji: '🎯', class: 'rating-very-good' };
+  } else if (pct >= 70) {
+    return { rating: 'جيد', emoji: '✅', class: 'rating-good' };
+  } else if (pct >= 50) {
+    return { rating: 'مقبول', emoji: '📗', class: 'rating-acceptable' };
+  } else if (pct >= 25) {
+    return { rating: 'ضعيف', emoji: '📕', class: 'rating-weak' };
+  } else {
+    return { rating: 'راسب', emoji: '❌', class: 'rating-fail' };
+  }
+}
+
+// ========== AUTH ==========
+function doLogin() {
+  const u = document.getElementById('login-username').value.trim();
+  const p = document.getElementById('login-password').value.trim();
+  const err = document.getElementById('login-error');
+  if (USERS[u] && USERS[u].password === p) {
+    currentUser = { username: u, role: USERS[u].role, playerName: '' };
+    err.style.display = 'none';
+    // Admin goes directly to admin panel, viewer goes to player name screen
+    if (currentUser.role === 'admin') {
+      currentUser.playerName = u;
+      renderAdminPanel();
+      showScreen('admin-screen');
+    } else {
+      document.getElementById('pn-welcome-sub').textContent = `مرحباً ${u}! تسجيل الدخول ناجح ✅`;
+      document.getElementById('player-name-input').value = '';
+      document.getElementById('player-name-error').style.display = 'none';
+      showScreen('player-name-screen');
+      setTimeout(() => document.getElementById('player-name-input').focus(), 100);
+    }
+  } else {
+    err.style.display = 'block';
+    document.getElementById('login-password').value = '';
+  }
+}
+document.getElementById('login-password').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+document.getElementById('login-username').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('login-password').focus(); });
+
+function confirmPlayerName() {
+  const name = document.getElementById('player-name-input').value.trim();
+  const err = document.getElementById('player-name-error');
+  if (!name) {
+    err.style.display = 'block';
+    document.getElementById('player-name-input').focus();
+    return;
+  }
+  err.style.display = 'none';
+  currentUser.playerName = name;
+  goToIntro();
+}
+
+// Enter key on player name screen
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('player-name-screen').classList.contains('active')) {
+    confirmPlayerName();
+  }
+});
+
+function doLogout() {
+  currentUser = null;
+  showScreen('login-screen');
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('player-name-input').value = '';
+}
+
+function goToIntro() {
+  const displayName = currentUser.playerName || currentUser.username;
+  document.getElementById('welcome-name').textContent = `مرحباً، ${displayName}!`;
+  document.getElementById('welcome-avatar').textContent = currentUser.role === 'admin' ? '👨‍💼' : '🎮';
+  const adminBtn = document.getElementById('admin-access-btn');
+  adminBtn.style.display = currentUser.role === 'admin' ? 'inline-block' : 'none';
+  showMyScores();
+  showScreen('intro-screen');
+}
+
+function showMyScores() {
+  const box = document.getElementById('my-scores-box');
+  const list = document.getElementById('my-scores-list');
+  const playerDisplay = currentUser.playerName || currentUser.username;
+  const results = loadResults().filter(r => r.player === playerDisplay);
+  if (results.length === 0) { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  const sorted = results.slice().sort((a,b) => new Date(b.date)-new Date(a.date)).slice(0,5);
+  list.innerHTML = sorted.map(r => `
+    <div class="score-entry">
+      <span>${new Date(r.date).toLocaleDateString('ar-LY')}</span>
+      <span class="score-entry-val">${r.score} / ${MAX_SCORE}</span>
+    </div>
+  `).join('');
+}
+
+// ========== SCREENS ==========
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function goHome() {
+  clearTimer();
+  clearGlobalTimer();
+  if (currentUser) goToIntro();
+  else showScreen('login-screen');
+}
+function goAdmin() {
+  if (!currentUser || currentUser.role !== 'admin') return;
+  renderAdminPanel();
+  showScreen('admin-screen');
+}
+function showToast(text, isGood=true) {
+  const t = document.createElement('div');
+  t.className = 'points-toast';
+  t.style.background = isGood ? 'var(--green)' : 'var(--red)';
+  t.style.color = isGood ? '#000' : '#fff';
+  t.textContent = text;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 1500);
+}
+function updateHeader() {
+  const lvl = state.currentLevel;
+  document.getElementById('score-display').textContent = state.score;
+  document.getElementById('progress-label').textContent = `المرحلة ${lvl+1} من ${TOTAL_LEVELS}`;
+  document.getElementById('progress-fill').style.width = `${((lvl)/TOTAL_LEVELS)*100+5}%`;
+  document.getElementById('player-name-hdr').textContent = currentUser ? (currentUser.playerName || currentUser.username) : '';
+}
+function updateLifelineUI() {
+  const btn = document.getElementById('lifeline-btn');
+  const cnt = document.getElementById('lifeline-count');
+  if (!btn || !cnt) return;
+  cnt.textContent = lifelineCount;
+  btn.disabled = (lifelineCount <= 0 || state.answered);
+}
+
+// ========== PER-QUESTION TIMER (disabled — using global 10-min timer) ==========
+function startTimer() { /* no-op: global timer handles timing */ }
+function clearTimer() { /* no-op */ }
+function updateTimerDisplay() { /* no-op */ }
+function timeExpired() { /* no-op */ }
+function getCurrentQ() {
+  if (state.isShowingSkipped) return state.skippedQuestions[state.skippedIndex];
+  return LEVELS[state.currentLevel].questions[state.currentQuestion];
+}
+
+// ========== RENDER LEVEL ==========
+function renderLevel() {
+  const lvl = LEVELS[state.currentLevel];
+  const q = lvl.questions[state.currentQuestion];
+  state.answered = false;
+  const stage = document.getElementById('level-stage');
+  const qTotal = lvl.questions.length;
+
+  let qHTML = '';
+  if (q.type === 'choice') qHTML = renderChoice(q, state.currentLevel, state.currentQuestion);
+  else if (q.type === 'drag') qHTML = renderDrag(q);
+  else if (q.type === 'sequence') qHTML = renderSequence(q);
+
+  const badgeClass = lvl.isManhaj ? 'level-badge manhaj-badge' : 'level-badge';
+  const scenarioClass = lvl.isManhaj ? 'level-scenario manhaj-scenario' : 'level-scenario';
+  const nextLabel = state.currentQuestion < qTotal - 1 ? 'السؤال التالي ➡' :
+                    (state.currentLevel < TOTAL_LEVELS - 1 ? 'المرحلة التالية 🚀' : 'النتائج النهائية 🏆');
+
+  stage.innerHTML = `
+    <div class="level-header">
+      <div class="${badgeClass}">${lvl.icon} ${lvl.badge}</div>
+      <div class="level-title">${lvl.name}</div>
+      <div class="${scenarioClass}">${lvl.scenario}</div>
+    </div>
+    <div class="lifeline-withdraw-bar">
+      <button class="lifeline-btn" id="lifeline-btn" onclick="useLifeline()">
+        🗑️ حذف إجابة خاطئة
+        <span class="lifeline-count" id="lifeline-count">${lifelineCount}</span>
+      </button>
+      <button class="withdraw-btn" onclick="withdrawGame()">🚪 الانسحاب</button>
+    </div>
+    <div class="question-block">
+      <div class="q-header">
+        <div class="q-number">السؤال ${state.currentQuestion + 1} من ${qTotal}</div>
+      </div>
+      <div class="q-text">${q.text}</div>
+      ${qHTML}
+      <div class="feedback-box" id="feedback-box"></div>
+    </div>
+    <div class="nav-buttons">
+      <button class="skip-btn" id="skip-btn" onclick="skipCurrentQuestion(false)">⏭ تخطي</button>
+      <button class="nav-btn" id="next-btn" onclick="nextQuestion()">${nextLabel}</button>
+    </div>
+  `;
+
+  updateHeader();
+  updateLifelineUI();
+  if (q.type === 'drag') initDrag(q);
+  if (q.type === 'sequence') initSequence(q);
+  startTimer();
+}
+
+// ========== RENDER SKIPPED ==========
+function renderSkippedQuestion() {
+  clearTimer();
+  const entry = state.skippedQuestions[state.skippedIndex];
+  if (!entry) { showResults(); return; }
+  const { levelIdx, questionIdx } = entry;
+  const lvl = LEVELS[levelIdx];
+  const q = lvl.questions[questionIdx];
+  state.answered = false;
+  const stage = document.getElementById('level-stage');
+  const remaining = state.skippedQuestions.length - state.skippedIndex;
+
+  let qHTML = '';
+  if (q.type === 'choice') qHTML = renderChoice(q, levelIdx, questionIdx);
+  else if (q.type === 'drag') qHTML = renderDrag(q);
+  else if (q.type === 'sequence') qHTML = renderSequence(q);
+
+  const badgeClass = lvl.isManhaj ? 'level-badge manhaj-badge' : 'level-badge';
+
+  stage.innerHTML = `
+    <div class="level-header">
+      <div class="${badgeClass}">${lvl.icon} ${lvl.badge} — جولة الأسئلة المتخطاة</div>
+      <div class="level-title">${lvl.name}</div>
+      <div style="text-align:center;margin-top:8px;">
+        <span style="background:rgba(255,107,53,0.1);border:1px solid rgba(255,107,53,0.3);border-radius:20px;padding:5px 16px;font-size:13px;color:var(--accent3);">
+          ⏭ سؤال متخطى ${state.skippedIndex+1} من ${state.skippedQuestions.length}
+        </span>
+      </div>
+    </div>
+    <div class="lifeline-withdraw-bar">
+      <button class="lifeline-btn" id="lifeline-btn" onclick="useLifeline()">
+        🗑️ حذف إجابة خاطئة
+        <span class="lifeline-count" id="lifeline-count">${lifelineCount}</span>
+      </button>
+      <button class="withdraw-btn" onclick="withdrawGame()">🚪 الانسحاب</button>
+    </div>
+    <div class="question-block">
+      <div class="q-header">
+        <div class="q-number">السؤال المتخطى ${state.skippedIndex + 1}</div>
+        <div class="q-skipped-badge">⏭ سبق تخطيه</div>
+      </div>
+      <div class="q-text">${q.text}</div>
+      ${qHTML}
+      <div class="feedback-box" id="feedback-box"></div>
+    </div>
+    <div class="nav-buttons">
+      <button class="nav-btn" id="next-btn" onclick="nextSkippedQuestion()">
+        ${state.skippedIndex < state.skippedQuestions.length - 1 ? 'السؤال التالي ➡' : 'النتائج النهائية 🏆'}
+      </button>
+    </div>
+  `;
+
+  updateHeader();
+  updateLifelineUI();
+  if (q.type === 'drag') initDrag(q);
+  if (q.type === 'sequence') initSequence(q);
+  startTimer();
+}
+
+// ========== SKIP ==========
+function skipCurrentQuestion(isTimeout) {
+  if (state.answered && !isTimeout) return;
+  clearTimer();
+  if (!isTimeout) state.answered = true;
+  // Store skipped question
+  state.skippedQuestions.push({ levelIdx: state.currentLevel, questionIdx: state.currentQuestion });
+  const skipBtn = document.getElementById('skip-btn');
+  if (skipBtn) { skipBtn.disabled = true; skipBtn.textContent = '✓ تم التخطي'; }
+  if (!isTimeout) enableNext();
+}
+
+function enableNext() {
+  const btn = document.getElementById('next-btn');
+  if (btn) btn.classList.add('enabled');
+}
+
+function nextQuestion() {
+  clearTimer();
+  const lvl = LEVELS[state.currentLevel];
+  state.currentQuestion++;
+  if (state.currentQuestion >= lvl.questions.length) {
+    state.currentQuestion = 0;
+    state.currentLevel++;
+    if (state.currentLevel >= TOTAL_LEVELS) {
+      // All main questions done, show skipped
+      if (state.skippedQuestions.length > 0) {
+        state.isShowingSkipped = true;
+        state.skippedIndex = 0;
+        updateHeader();
+        renderSkippedQuestion();
+      } else {
+        showResults();
+      }
+      return;
+    }
+  }
+  renderLevel();
+}
+
+function nextSkippedQuestion() {
+  clearTimer();
+  state.skippedIndex++;
+  if (state.skippedIndex >= state.skippedQuestions.length) {
+    showResults();
+  } else {
+    renderSkippedQuestion();
+  }
+}
+
+// ========== CHOICE ==========
+function renderChoice(q, levelIdx, questionIdx) {
+  // Use session-shuffled options if available
+  const shuffled = state.shuffledQuestions && state.shuffledQuestions[levelIdx] && state.shuffledQuestions[levelIdx][questionIdx];
+  const opts = shuffled ? shuffled.options : q.options;
+  const correctIdx = shuffled ? shuffled.correct : q.correct;
+  return `<div class="options-list">
+    ${opts.map((opt,i) => `
+      <button class="option-btn" onclick="answerChoice(${i},${correctIdx},this)">
+        <span class="opt-icon">${String.fromCharCode(65+i)}</span>
+        <span>${opt}</span>
+      </button>
+    `).join('')}
+  </div>`;
+}
+function answerChoice(idx, correct, btn) {
+  if (state.answered) return;
+  clearTimer();
+  state.answered = true;
+  const q = state.isShowingSkipped ?
+    LEVELS[state.skippedQuestions[state.skippedIndex].levelIdx].questions[state.skippedQuestions[state.skippedIndex].questionIdx] :
+    LEVELS[state.currentLevel].questions[state.currentQuestion];
+  const allBtns = document.querySelectorAll('.option-btn');
+  allBtns.forEach(b => b.disabled = true);
+  const isCorrect = idx === correct;
+  btn.classList.add(isCorrect ? 'correct' : 'wrong');
+  if (!isCorrect) allBtns[correct].classList.add('correct');
+  const pts = isCorrect ? 1 : 0;
+  awardPoints(pts, isCorrect, state.isShowingSkipped ? state.skippedQuestions[state.skippedIndex].levelIdx : state.currentLevel);
+  const fb = document.getElementById('feedback-box');
+  fb.className = `feedback-box show ${isCorrect ? 'correct-fb' : 'wrong-fb'}`;
+  fb.innerHTML = isCorrect ? q.feedback.correct : q.feedback.wrong;
+  enableNext();
+  updateLifelineUI();
+}
+
+// ========== DRAG ==========
+function renderDrag(q) {
+  const shuffled = [...q.items].sort(() => Math.random() - 0.5);
+  return `
+    <div style="margin-bottom:10px;font-size:12px;color:var(--muted);">اسحب كل عنصر إلى الخانة المناسبة:</div>
+    <div class="drag-area" id="drag-source">
+      ${shuffled.map(item => `<div class="drag-item" draggable="true" data-item="${item}">${item}</div>`).join('')}
+    </div>
+    <div class="drop-zones">
+      ${q.zones.map((z,i) => `
+        <div class="drop-zone-row">
+          <div class="drop-zone-label">📌 ${z.label}</div>
+          <div class="drop-zone" id="zone-${i}" data-answer="${z.answer}">اسحب هنا</div>
+        </div>
+      `).join('')}
+    </div>
+    <button onclick="checkDrag()" style="background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:white;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;padding:10px 28px;border-radius:50px;cursor:pointer;margin-top:6px;">✅ تحقق</button>
+  `;
+}
+function initDrag(q) {
+  setTimeout(() => {
+    const items = document.querySelectorAll('.drag-item');
+    const zones = document.querySelectorAll('.drop-zone');
+    items.forEach(item => {
+      item.addEventListener('dragstart', e => { state.dragState.dragging=item; item.classList.add('dragging'); e.dataTransfer.setData('text/plain',item.dataset.item); });
+      item.addEventListener('dragend', () => item.classList.remove('dragging'));
+    });
+    zones.forEach(zone => {
+      zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('over'); });
+      zone.addEventListener('dragleave', () => zone.classList.remove('over'));
+      zone.addEventListener('drop', e => {
+        e.preventDefault(); zone.classList.remove('over');
+        const item = state.dragState.dragging;
+        if (!item) return;
+        const prev = item.parentElement;
+        if (prev && prev.classList.contains('drop-zone')) prev.innerHTML = 'اسحب هنا';
+        const existing = zone.querySelector('.drag-item');
+        if (existing) document.getElementById('drag-source').appendChild(existing);
+        zone.innerHTML = '';
+        zone.appendChild(item);
+        zone.dataset.filled = item.dataset.item;
+      });
+    });
+  }, 100);
+}
+function checkDrag() {
+  if (state.answered) return;
+  clearTimer();
+  const zones = document.querySelectorAll('.drop-zone');
+  let correct = 0;
+  zones.forEach(zone => { if (zone.dataset.filled === zone.dataset.answer) correct++; });
+  state.answered = true;
+  const allCorrect = correct === zones.length;
+  const pts = allCorrect ? 1 : 0;
+  const lvlIdx = state.isShowingSkipped ? state.skippedQuestions[state.skippedIndex].levelIdx : state.currentLevel;
+  awardPoints(pts, allCorrect, lvlIdx);
+  const fb = document.getElementById('feedback-box');
+  fb.className = `feedback-box show ${allCorrect ? 'correct-fb' : 'wrong-fb'}`;
+  fb.innerHTML = allCorrect ? '✅ رائع! طابقت جميع المكونات بشكل صحيح!' : `❌ أصبت في ${correct} من ${zones.length}. CPU=تنفيذ، SSD=تخزين، GPU=رسومات، Motherboard=توصيل.`;
+  enableNext();
+}
+
+// ========== SEQUENCE ==========
+function renderSequence(q) {
+  const shuffled = q.items.map((text,i) => ({text,origIdx:i})).sort(() => Math.random()-0.5);
+  return `
+    <div style="margin-bottom:10px;font-size:12px;color:var(--muted);">اسحب العناصر لترتيبها من الأول للأخير:</div>
+    <div class="seq-items" id="seq-list">
+      ${shuffled.map((item,i) => `
+        <div class="seq-item" draggable="true" data-orig="${item.origIdx}">
+          <div class="seq-num">${i+1}</div>
+          <span>${item.text}</span>
+        </div>
+      `).join('')}
+    </div>
+    <button onclick="checkSequence()" style="background:linear-gradient(135deg,var(--accent2),var(--accent));border:none;color:white;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;padding:10px 28px;border-radius:50px;cursor:pointer;margin-top:6px;">✅ تحقق من الترتيب</button>
+  `;
+}
+function initSequence(q) {
+  setTimeout(() => {
+    const list = document.getElementById('seq-list');
+    if (!list) return;
+    let dragging = null;
+    list.querySelectorAll('.seq-item').forEach(item => {
+      item.addEventListener('dragstart', () => { dragging=item; item.classList.add('dragging'); });
+      item.addEventListener('dragend', () => { item.classList.remove('dragging'); dragging=null; });
+      item.addEventListener('dragover', e => { e.preventDefault(); item.classList.add('drag-over'); });
+      item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+      item.addEventListener('drop', e => {
+        e.preventDefault(); item.classList.remove('drag-over');
+        if (dragging && dragging !== item) {
+          const items = [...list.querySelectorAll('.seq-item')];
+          const fi = items.indexOf(dragging), ti = items.indexOf(item);
+          if (fi < ti) list.insertBefore(dragging, item.nextSibling);
+          else list.insertBefore(dragging, item);
+          list.querySelectorAll('.seq-item').forEach((s,i2) => s.querySelector('.seq-num').textContent = i2+1);
+        }
+      });
+    });
+  }, 100);
+}
+function checkSequence() {
+  if (state.answered) return;
+  clearTimer();
+  const q = state.isShowingSkipped ?
+    LEVELS[state.skippedQuestions[state.skippedIndex].levelIdx].questions[state.skippedQuestions[state.skippedIndex].questionIdx] :
+    LEVELS[state.currentLevel].questions[state.currentQuestion];
+  const items = [...document.querySelectorAll('.seq-item')];
+  const userOrder = items.map(i => parseInt(i.dataset.orig));
+  const correct = JSON.stringify(userOrder) === JSON.stringify(q.correct);
+  state.answered = true;
+  const lvlIdx = state.isShowingSkipped ? state.skippedQuestions[state.skippedIndex].levelIdx : state.currentLevel;
+  awardPoints(correct ? 1 : 0, correct, lvlIdx);
+  const fb = document.getElementById('feedback-box');
+  fb.className = `feedback-box show ${correct ? 'correct-fb' : 'wrong-fb'}`;
+  fb.innerHTML = correct ? '✅ رائع! رتّبت الخطوات بشكل صحيح!' : '❌ الترتيب الصحيح: افتح المستكشف ← انقر الملف ← Ctrl+X ← انتقل للهدف ← Ctrl+V';
+  enableNext();
+}
+
+// ========== SCORING ==========
+function awardPoints(pts, isGood, levelIdx) {
+  state.score += pts;
+  if (levelIdx !== undefined) state.levelScores[levelIdx] = (state.levelScores[levelIdx] || 0) + pts;
+  document.getElementById('score-display').textContent = state.score;
+  if (pts > 0) showToast(`+${pts} نقطة ⭐`, true);
+  else if (!isGood) showToast('حاول مجدداً! 💡', false);
+}
+
+// ========== START / RESTART ==========
+function startGame() {
+  clearTimer();
+  clearGlobalTimer();
+  lifelineCount = 7;
+  const shuffled = shuffleAllQuestions();
+  state = { currentLevel:0, currentQuestion:0, score:0, levelScores:[0,0,0,0,0,0,0,0], answered:false, dragState:{dragging:null}, skippedQuestions:[], isShowingSkipped:false, skippedIndex:0, shuffledQuestions: shuffled };
+  showScreen('game-screen');
+  startGlobalTimer();
+  renderLevel();
+}
+function restartGame() {
+  clearTimer();
+  startGame();
+}
+function withdrawGame() {
+  if (!confirm('هل تريد الانسحاب من اللعبة؟ سيتم احتساب نقاطك الحالية كنتيجة نهائية.')) return;
+  clearTimer();
+  clearGlobalTimer();
+  showResults(true);
+}
+
+// ========== GLOBAL TIMER (10 minutes) ==========
+function startGlobalTimer() {
+  clearGlobalTimer();
+  globalTimeLeft = 600;
+  updateGlobalTimerDisplay();
+  globalTimerInterval = setInterval(() => {
+    globalTimeLeft--;
+    updateGlobalTimerDisplay();
+    if (globalTimeLeft <= 0) {
+      clearGlobalTimer();
+      clearTimer();
+      showResults(false);
+    }
+  }, 1000);
+}
+function clearGlobalTimer() {
+  if (globalTimerInterval) { clearInterval(globalTimerInterval); globalTimerInterval = null; }
+}
+function updateGlobalTimerDisplay() {
+  const el = document.getElementById('global-timer-num');
+  if (!el) return;
+  const mins = Math.floor(globalTimeLeft / 60);
+  const secs = globalTimeLeft % 60;
+  el.textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+  if (globalTimeLeft <= 60) el.classList.add('urgent');
+  else el.classList.remove('urgent');
+}
+
+// ========== LIFELINE: حذف إجابة خاطئة ==========
+function useLifeline() {
+  if (lifelineCount <= 0) return;
+  if (state.answered) return;
+  const q = state.isShowingSkipped
+    ? LEVELS[state.skippedQuestions[state.skippedIndex].levelIdx].questions[state.skippedQuestions[state.skippedIndex].questionIdx]
+    : LEVELS[state.currentLevel].questions[state.currentQuestion];
+  if (!q || q.type !== 'choice') {
+    showToast('الوسيلة تعمل على أسئلة الاختيار فقط', false);
+    return;
+  }
+  const li = state.isShowingSkipped ? state.skippedQuestions[state.skippedIndex].levelIdx : state.currentLevel;
+  const qi = state.isShowingSkipped ? state.skippedQuestions[state.skippedIndex].questionIdx : state.currentQuestion;
+  const shuffled = state.shuffledQuestions && state.shuffledQuestions[li] && state.shuffledQuestions[li][qi];
+  const correctIdx = shuffled ? shuffled.correct : q.correct;
+  const allBtns = [...document.querySelectorAll('.option-btn')].filter(b => !b.disabled);
+  // Find wrong buttons that are still visible and not already removed
+  const wrongBtns = allBtns.filter((b, i) => {
+    // get actual index from position in options list
+    const opts = document.querySelectorAll('.option-btn');
+    const realIdx = [...opts].indexOf(b);
+    return realIdx !== correctIdx && !b.classList.contains('eliminated');
+  });
+  if (wrongBtns.length === 0) return;
+  // Remove one random wrong answer
+  const target = wrongBtns[Math.floor(Math.random() * wrongBtns.length)];
+  target.classList.add('eliminated');
+  target.style.opacity = '0.25';
+  target.style.textDecoration = 'line-through';
+  target.disabled = true;
+  target.style.transform = 'scale(0.95)';
+  // Decrease count
+  lifelineCount--;
+  document.getElementById('lifeline-count').textContent = lifelineCount;
+  if (lifelineCount === 0) {
+    document.getElementById('lifeline-btn').disabled = true;
+  }
+  showToast(`💡 تم حذف إجابة خاطئة! — تبقى ${lifelineCount} وسائل`, true);
+}
+
+// ========== RESULTS ==========
+let gameWithdrawn = false;
+function showResults(withdrawn = false) {
+  clearTimer();
+  clearGlobalTimer();
+  gameWithdrawn = withdrawn;
+  showScreen('result-screen');
+  const score = state.score;
+  const pct = Math.round((score / MAX_SCORE) * 100);
+  const playerDisplay = currentUser ? (currentUser.playerName || currentUser.username) : 'لاعب';
+
+  document.getElementById('result-score').textContent = score;
+  document.getElementById('result-player-name').textContent = `👤 ${playerDisplay}`;
+  document.getElementById('result-pct').textContent = `${pct}%`;
+  document.getElementById('withdrawal-notice').style.display = withdrawn ? 'block' : 'none';
+
+  // Perfect score
+  document.getElementById('result-perfect').style.display = score === MAX_SCORE ? 'block' : 'none';
+
+  // Level & emoji & badge
+  let emoji, title, levelLabel, badgeBg, badgeColor;
+  if (score === MAX_SCORE) {
+    emoji = '🏆'; title = 'بطل رقمي خارق!';
+    levelLabel = '🌟 ممتاز';
+    badgeBg = 'linear-gradient(135deg,#ffd700,#ff9500)'; badgeColor = '#000';
+  } else if (pct >= 85) {
+    emoji = '🥇'; title = 'أداء رائع جداً!';
+    levelLabel = '🎯 جيد جداً';
+    badgeBg = 'linear-gradient(135deg,var(--accent),#0099cc)'; badgeColor = '#fff';
+  } else if (pct >= 70) {
+    emoji = '🌟'; title = 'متقدم في التكنولوجيا!';
+    levelLabel = '✅ جيد';
+    badgeBg = 'linear-gradient(135deg,var(--green),#00aa55)'; badgeColor = '#000';
+  } else if (pct >= 50) {
+    emoji = '💡'; title = 'جيد! يمكنك أفضل';
+    levelLabel = '📗 مقبول';
+    badgeBg = 'linear-gradient(135deg,#6a9f5a,#4a7f3a)'; badgeColor = '#fff';
+  } else {
+    emoji = '📚'; title = 'استمر في التعلم!';
+    levelLabel = '📕 ضعيف';
+    badgeBg = 'linear-gradient(135deg,var(--red),#cc2244)'; badgeColor = '#fff';
+  }
+
+  document.getElementById('result-emoji').textContent = emoji;
+  document.getElementById('result-title').textContent = title;
+  const badge = document.getElementById('result-level-badge');
+  badge.textContent = levelLabel;
+  badge.style.background = badgeBg;
+  badge.style.color = badgeColor;
+  badge.style.boxShadow = '0 4px 20px rgba(0,0,0,0.3)';
+
+  const lr = document.getElementById('level-results');
+  lr.innerHTML = LEVELS.map((lvl,i) => {
+    const s = state.levelScores[i] || 0;
+    const max = lvl.questions.length;
+    const pct2 = Math.round((s/max)*100);
+    const barClass = lvl.isManhaj ? 'lr-bar manhaj-bar' : 'lr-bar';
+    const cardClass = lvl.isManhaj ? 'lr-card manhaj-card' : 'lr-card';
+    return `<div class="${cardClass}"><div class="lr-icon">${lvl.icon}</div><div class="lr-name">${lvl.name}</div><div class="lr-bar-wrap"><div class="${barClass}" style="width:${pct2}%"></div></div><div class="lr-pts">${s}/${max}</div></div>`;
+  }).join('');
+
+  // Auto-save
+  autoSaveResult(score);
+}
+
+function autoSaveResult(score) {
+  if (!currentUser) return;
+  const results = loadResults();
+  const ratingInfo = calculateRating(score);
+  const pct = Math.round((score / MAX_SCORE) * 100);
+  const playerName = currentUser.playerName || currentUser.username;
+  results.push({
+    player: playerName,
+    score: score,
+    percentage: pct,
+    rating: ratingInfo.rating,
+    date: new Date().toISOString(),
+    levelScores: [...state.levelScores]
+  });
+  saveResults(results);
+  // Send result by email automatically
+  sendResultByEmail(playerName, score, pct, ratingInfo.rating);
+}
+
+function saveResult() {
+  if (!currentUser) return;
+  showToast('✅ تم حفظ النتيجة!', true);
+}
+
+function printResult() {
+  clearTimer();
+  const score = state.score;
+  const playerName = currentUser ? (currentUser.playerName || currentUser.username) : 'لاعب';
+  const date = new Date().toLocaleDateString('ar-LY');
+  const levelDetails = LEVELS.map((lvl,i) => {
+    const s = state.levelScores[i] || 0;
+    const max = lvl.questions.length;
+    return `${lvl.name}: ${s}/${max}`;
+  }).join(' | ');
+
+  const printWin = window.open('', '_blank');
+  printWin.document.write(`
+    <!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
+    <title>نتيجة لعبة مستكشف العالم الرقمي</title>
+    <style>
+      body { font-family: Arial, sans-serif; padding: 40px; color: #111; }
+      h1 { color: #0066cc; text-align: center; }
+      .score { font-size: 48px; font-weight: 900; color: #0066cc; text-align: center; margin: 20px 0; }
+      .info { text-align: center; font-size: 16px; margin-bottom: 20px; color: #555; }
+      table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+      th { background: #0066cc; color: white; padding: 10px; text-align: right; }
+      td { padding: 8px 10px; border-bottom: 1px solid #ddd; }
+      tr:nth-child(even) td { background: #f5f5f5; }
+      .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #888; }
+    </style></head><body>
+    <h1>🌐 مستكشف العالم الرقمي — نتيجة اللاعب</h1>
+    <div class="info">اللاعب: <strong>${playerName}</strong> | التاريخ: ${date}</div>
+    <div class="score">${score} / ${MAX_SCORE}</div>
+    <table>
+      <tr><th>المرحلة</th><th>النتيجة</th><th>النسبة</th></tr>
+      ${LEVELS.map((lvl,i) => {
+        const s = state.levelScores[i]||0;
+        const max = lvl.questions.length;
+        return `<tr><td>${lvl.icon} ${lvl.name}</td><td>${s}/${max}</td><td>${Math.round((s/max)*100)}%</td></tr>`;
+      }).join('')}
+    </table>
+    <div class="footer">تم إنشاؤه بواسطة لعبة مستكشف العالم الرقمي</div>
+    </body></html>
+  `);
+  printWin.document.close();
+  printWin.print();
+}
+
+// ========== ADMIN ==========
+function renderAdminPanel() {
+  setTimeout(() => loadEmailSettingsToForm(), 100);
+  const results = loadResults();
+  document.getElementById('stat-players').textContent = results.length;
+  if (results.length > 0) {
+    const avg = Math.round(results.reduce((a,r)=>a+r.score,0)/results.length);
+    const top = Math.max(...results.map(r=>r.score));
+    document.getElementById('stat-avg').textContent = avg;
+    document.getElementById('stat-top').textContent = top;
+  } else {
+    document.getElementById('stat-avg').textContent = '—';
+    document.getElementById('stat-top').textContent = '—';
+  }
+  document.getElementById('results-count').textContent = `${results.length} نتيجة`;
+
+  const container = document.getElementById('admin-results-container');
+  if (results.length === 0) {
+    container.innerHTML = '<div class="empty-results">لا توجد نتائج بعد</div>';
+    return;
+  }
+  const sorted = results.slice().sort((a,b) => b.score - a.score);
+  container.innerHTML = `
+    <table class="results-table">
+      <thead><tr>
+        <th>الترتيب</th><th>اللاعب</th><th>النتيجة</th><th>النسبة</th><th>التقدير</th><th>التاريخ</th>
+      </tr></thead>
+      <tbody>
+        ${sorted.map((r,i) => {
+          const rankClass = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';
+          const rankSymbol = i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}`;
+          const pct = r.percentage !== undefined ? r.percentage : Math.round((r.score/MAX_SCORE)*100);
+          const ratingInfo = r.rating ? { rating: r.rating } : calculateRating(r.score);
+          const date = new Date(r.date).toLocaleDateString('ar-LY');
+          return `<tr>
+            <td><div class="rank-badge ${rankClass}">${rankSymbol}</div></td>
+            <td><strong>${r.player}</strong></td>
+            <td><div class="score-badge">⭐ ${r.score}</div></td>
+            <td>${pct}%</td>
+            <td><div class="rating-badge ${ratingInfo.class}">${ratingInfo.rating}</div></td>
+            <td style="color:var(--muted);font-size:12px;">${date}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function clearAllResults() {
+  if (confirm('هل أنت متأكد من مسح جميع النتائج؟ لا يمكن التراجع عن هذا الإجراء.')) {
+    saveResults([]);
+    renderAdminPanel();
+    showToast('✅ تم مسح جميع النتائج', true);
+  }
+}
+
+function printAdminResults() {
+  const results = loadResults();
+  if (results.length === 0) { alert('لا توجد نتائج للطباعة'); return; }
+  const sorted = results.slice().sort((a,b) => b.score - a.score);
+  const date = new Date().toLocaleDateString('ar-LY');
+
+  const printWin = window.open('', '_blank');
+  printWin.document.write(`
+    <!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
+    <title>نتائج لعبة مستكشف العالم الرقمي</title>
+    <style>
+      body { font-family: Arial, sans-serif; padding: 40px; color: #111; }
+      h1 { color: #0066cc; text-align: center; }
+      .subtitle { text-align: center; color: #555; margin-bottom: 30px; }
+      table { width: 100%; border-collapse: collapse; }
+      th { background: #0066cc; color: white; padding: 10px; text-align: right; }
+      td { padding: 8px 10px; border-bottom: 1px solid #ddd; }
+      tr:nth-child(even) td { background: #f5f5f5; }
+      .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #888; border-top: 1px solid #ddd; padding-top: 12px; }
+    </style></head><body>
+    <h1>🌐 مستكشف العالم الرقمي — نتائج الطلاب</h1>
+    <div class="subtitle">تاريخ الطباعة: ${date} | عدد الطلاب: ${results.length}</div>
+    <table>
+      <thead><tr><th>#</th><th>اللاعب</th><th>النتيجة</th><th>النسبة</th><th>التقدير</th><th>التاريخ</th></tr></thead>
+      <tbody>
+        ${sorted.map((r,i) => {
+          const pct = r.percentage !== undefined ? r.percentage : Math.round((r.score/MAX_SCORE)*100);
+          const rating = r.rating || calculateRating(r.score).rating;
+          return `<tr>
+            <td>${i+1}</td>
+            <td>${r.player}</td>
+            <td>${r.score} / ${MAX_SCORE}</td>
+            <td>${pct}%</td>
+            <td>${rating}</td>
+            <td>${new Date(r.date).toLocaleDateString('ar-LY')}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    <div class="footer">لوحة تحكم مدرس المادة — عبدالرحمن</div>
+    </body></html>
+  `);
+  printWin.document.close();
+  printWin.print();
+}
+
+
+// ========== EMAIL SETTINGS ==========
+function loadEmailSettings() {
+  try {
+    return JSON.parse(localStorage.getItem('emailjs_settings') || '{}');
+  } catch(e) { return {}; }
+}
+function saveEmailSettings() {
+  const email = document.getElementById('admin-email-input').value.trim();
+  const publicKey = document.getElementById('ejs-public-key').value.trim();
+  const serviceId = document.getElementById('ejs-service-id').value.trim();
+  const templateId = document.getElementById('ejs-template-id').value.trim();
+  const status = document.getElementById('email-save-status');
+
+  if (!email || !publicKey || !serviceId || !templateId) {
+    status.style.color = 'var(--red)';
+    status.textContent = '❌ يرجى ملء جميع الحقول';
+    return;
+  }
+  const settings = { email, publicKey, serviceId, templateId };
+  localStorage.setItem('emailjs_settings', JSON.stringify(settings));
+  emailjs.init(publicKey);
+  status.style.color = 'var(--green)';
+  status.textContent = '✅ تم حفظ الإعدادات بنجاح!';
+  setTimeout(() => status.textContent = '', 3000);
+}
+function loadEmailSettingsToForm() {
+  const s = loadEmailSettings();
+  if (s.email) document.getElementById('admin-email-input').value = s.email;
+  if (s.publicKey) document.getElementById('ejs-public-key').value = s.publicKey;
+  if (s.serviceId) document.getElementById('ejs-service-id').value = s.serviceId;
+  if (s.templateId) document.getElementById('ejs-template-id').value = s.templateId;
+  if (s.publicKey) emailjs.init(s.publicKey);
+}
+function sendResultByEmail(playerName, score, percentage, rating) {
+  const s = loadEmailSettings();
+  if (!s.email || !s.serviceId || !s.templateId || !s.publicKey) return;
+  emailjs.init(s.publicKey);
+  const date = new Date().toLocaleString('ar-LY');
+  emailjs.send(s.serviceId, s.templateId, {
+    to_email: s.email,
+    student_name: playerName,
+    score: score + ' / ' + MAX_SCORE,
+    percentage: percentage + '%',
+    rating: rating,
+    date: date
+  }).then(() => {
+    console.log('✅ تم إرسال النتيجة بالبريد الإلكتروني');
+  }).catch((err) => {
+    console.error('❌ فشل إرسال البريد:', err);
+  });
+}
+function sendTestEmail() {
+  const s = loadEmailSettings();
+  const status = document.getElementById('email-save-status');
+  if (!s.email || !s.serviceId || !s.templateId || !s.publicKey) {
+    status.style.color = 'var(--red)';
+    status.textContent = '❌ احفظ الإعدادات أولاً';
+    return;
+  }
+  status.style.color = 'var(--gold)';
+  status.textContent = '⏳ جاري الإرسال...';
+  emailjs.init(s.publicKey);
+  emailjs.send(s.serviceId, s.templateId, {
+    to_email: s.email,
+    student_name: 'طالب تجريبي',
+    score: '35 / 40',
+    percentage: '87%',
+    rating: 'جيد جداً',
+    date: new Date().toLocaleString('ar-LY')
+  }).then(() => {
+    status.style.color = 'var(--green)';
+    status.textContent = '✅ تم إرسال البريد التجريبي بنجاح!';
+    setTimeout(() => status.textContent = '', 4000);
+  }).catch((err) => {
+    status.style.color = 'var(--red)';
+    status.textContent = '❌ فشل الإرسال — تحقق من البيانات';
+    setTimeout(() => status.textContent = '', 4000);
+  });
+}
+
+// ========== ENTER KEY FOR LOGIN ==========
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('login-screen').classList.contains('active')) {
+    doLogin();
+  }
+});
+</script>
+</body>
+</html>
